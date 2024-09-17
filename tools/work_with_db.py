@@ -113,7 +113,7 @@ class SaveToDatabase:
                                                               "не о сильной ассоциативной связи между\n"
                                                               "словами, а о недостаточно большом размере корпуса.\n")
                         print(
-                            Fore.GREEN + Style.BRIGHT + "При большом размере корпуса подсчет PMI может занять какое-то время. "
+                            Fore.LIGHTGREEN_EX + Style.BRIGHT + "При большом размере корпуса подсчет PMI может занять какое-то время. "
                                                         "Пожалуйста, будьте готовы подождать.\n")
 
                         wait_for_enter_to_analyze()
@@ -132,11 +132,11 @@ class SaveToDatabase:
 
                         while True:
                             print(
-                                Fore.YELLOW + Style.BRIGHT + "Отобразить биграммы и их PMI(y/n)?")
+                                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить биграммы и их PMI(y/n)?")
                             show_bigrams_pmi = input()
                             if show_bigrams_pmi.lower() == 'y':
                                 print(
-                                    Fore.RED + Style.BRIGHT + "\nВнимание! Вывод значений PMI для всех биграммов может занять"
+                                    Fore.LIGHTRED_EX + Style.BRIGHT + "\nВнимание! Вывод значений PMI для всех биграммов может занять"
                                                               " много места на экране. \nБиграммы будут представлены в лемматизированном виде.")
                                 display_pmi_table(pmi_values)
                                 wait_for_enter_to_choose_opt()
@@ -149,7 +149,7 @@ class SaveToDatabase:
 
                     while True:
                         print(
-                            Fore.YELLOW + Style.BRIGHT + "\nОтобразить PMI (Pointwise Mutual Information) корпуса текстов (y/n)?")
+                            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nОтобразить PMI (Pointwise Mutual Information) корпуса текстов (y/n)?")
                         show_pmi_choice = input()
                         if show_pmi_choice.lower() == 'y':
                             show_pmi()
@@ -174,7 +174,7 @@ class SaveToDatabase:
                     break
                 else:
                     print(
-                        Fore.RED + "Неправильный выбор. Пожалуйста, выберите один из предложенных вариантов.\n" + Fore.RESET)
+                        Fore.LIGHTRED_EX + "Неправильный выбор. Пожалуйста, выберите один из предложенных вариантов.\n" + Fore.RESET)
                     continue
 
         else:
@@ -292,7 +292,7 @@ class SaveToDatabase:
                 elif choice == "9":
                     while True:
                         confirm = input(
-                            Fore.RED + Style.BRIGHT + "Вы уверены, что хотите удалить запись об этом тексте (y/n)?\nЭто действие будет не отменить.\n" + Fore.RESET).lower()
+                            Fore.LIGHTRED_EX + Style.BRIGHT + "Вы уверены, что хотите удалить запись об этом тексте (y/n)?\nЭто действие будет не отменить.\n" + Fore.RESET).lower()
                         if confirm == 'y':
                             self.delete_text_from_corpus(text_id)
                             exit_loop = True
@@ -949,7 +949,7 @@ class SaveToDatabase:
 
             print_frequencies(token_positions_normalized_frequencies, token_positions_counts)
             print(
-                Fore.YELLOW + Style.BRIGHT + "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ"
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ"
                 + Fore.RESET)
             print(
                 Fore.LIGHTGREEN_EX + Style.BRIGHT + "* Выводятся контексты предложений, длиннее 5 токенов."
@@ -1068,7 +1068,7 @@ class SaveToDatabase:
             print(Fore.LIGHTWHITE_EX + "*" * 80)
             wait_for_enter_to_choose_opt()
         else:
-            print(Fore.RED + "Данные о показателях Simplification отсутствуют." + Fore.RESET)
+            print(Fore.LIGHTRED_EX + "Данные о показателях Simplification отсутствуют." + Fore.RESET)
 
     def display_normalisation_features_for_corpus(self):
         """Отображение средних значений индикаторов универсалии Normalisation"""
@@ -1200,7 +1200,7 @@ class SaveToDatabase:
             wait_for_enter_to_analyze()
 
             print(
-                Fore.YELLOW + Style.BRIGHT + "\n           СРЕДНИЕ ПОКАЗАТЕЛИ ЧАСТОТ ДИСКУРСИВНЫХ МАРКЕРОВ "
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n           СРЕДНИЕ ПОКАЗАТЕЛИ ЧАСТОТ ДИСКУРСИВНЫХ МАРКЕРОВ "
                                              "ПО КАТЕГОРИЯМ" + Fore.RESET)
             print(
                 Fore.BLUE + Style.DIM + f"                        В среднем тексты содержат "
@@ -1592,9 +1592,9 @@ class SaveToDatabase:
         wait_for_enter_to_analyze()
 
         print(
-            Fore.YELLOW + Style.BRIGHT + "\n            ДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n            ДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
         print(
-            Fore.RED + Style.BRIGHT + "Внимание! N-граммы '<' и '>' используются для обозначания начала и конца "
+            Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! N-граммы '<' и '>' используются для обозначания начала и конца "
                                       "\nслов соответственно.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
         min_count = min_count_choice()
@@ -1658,7 +1658,7 @@ class SaveToDatabase:
             wait_for_enter_to_analyze()
 
         print(
-            Fore.YELLOW + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ВЫВЕДЕНЫ СРЕДНИЕ ПОКАЗАТЕЛИ ДЛЯ ТРИГРАММОВ С 1,2,3 ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ\n" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ВЫВЕДЕНЫ СРЕДНИЕ ПОКАЗАТЕЛИ ДЛЯ ТРИГРАММОВ С 1,2,3 ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ\n" + Fore.RESET)
         min_count = min_count_choice()
         for category, trigrams in func_w_trigrams_freqs_total.items():
             print(

@@ -92,7 +92,7 @@ def lexical_variety(text, show_analysis=True):
         console.print(table)
         wait_for_enter_to_analyze()
 
-        print(Fore.YELLOW + Style.BRIGHT + "\n                        ЧАСТОТНОЕ РАСПРЕДЕЛЕНИЕ ТИПОВ" + Fore.RESET)
+        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                        ЧАСТОТНОЕ РАСПРЕДЕЛЕНИЕ ТИПОВ" + Fore.RESET)
         wait_for_enter_to_analyze()
         frequency_dict = {}
         for word, freq in freq_dist.items():

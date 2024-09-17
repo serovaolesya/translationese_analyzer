@@ -8,7 +8,7 @@ from rich.table import Table
 
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.lemmatizators import lemmatize_words_without_stopwords
-from tools.stop_words_extraction_removal import count_custom_stopwords
+from tools.core.stop_words_extraction_removal import count_custom_stopwords
 from tools.core.text_preparation import TextPreProcessor
 
 console = Console()
@@ -90,7 +90,7 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
     :param min_occurrences: int, Минимальное количество вхождений для отображения в таблице. Значение по умолчанию 2.
     """
     # Преобразование строки JSON обратно в словарь
-    print(Fore.YELLOW + Style.BRIGHT + "\n                КОЛИЧЕСТВА ВХОЖДЕНИЙ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
+    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                КОЛИЧЕСТВА ВХОЖДЕНИЙ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
     while True:
         try:
             user_input = input(Fore.LIGHTGREEN_EX + Style.BRIGHT +
@@ -102,9 +102,9 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
             if min_occurrences > 0:
                 break
             else:
-                print(Fore.RED + "Минимальное количество вхождений должно быть больше нуля.\n" + Fore.RESET)
+                print(Fore.LIGHTRED_EX + "Минимальное количество вхождений должно быть больше нуля.\n" + Fore.RESET)
         except ValueError:
-            print(Fore.RED + "Пожалуйста, введите целое число." + Fore.RESET)
+            print(Fore.LIGHTRED_EX + "Пожалуйста, введите целое число." + Fore.RESET)
 
     try:
         sorted_content_word_counts = json.loads(sorted_content_word_counts_json)
@@ -123,7 +123,7 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
             grouped_word_counts[count].append(word)
 
     if not grouped_word_counts:
-        print(Fore.RED + Style.BRIGHT + "\nНет слов с количеством вхождений > или = указанному минимуму." + Fore.RESET)
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nНет слов с количеством вхождений > или = указанному минимуму." + Fore.RESET)
         return
 
     for count, words in sorted(grouped_word_counts.items(), reverse=True):

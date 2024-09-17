@@ -106,12 +106,12 @@ def main():
     while True:
         # Выбор режима ввода
         mode = input(
-            Fore.YELLOW + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
 
         if mode.lower().strip() == 'f':
             while True:
                 print(
-                    Fore.YELLOW + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
                 print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_texts/")
                 print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_texts/")
                 print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_texts/")
@@ -141,7 +141,7 @@ def main():
 
         elif mode.lower().strip() == 't':
             while True:
-                print(Fore.YELLOW + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
+                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
                 print(Fore.LIGHTWHITE_EX + "1. Аутентичный текст")
                 print(Fore.LIGHTWHITE_EX + "2. Машинный перевод")
                 print(Fore.LIGHTWHITE_EX + "3. Перевод, сделанный человеком")
@@ -191,7 +191,7 @@ def main():
 
 
 def get_full_input():
-    print(Fore.YELLOW + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
+    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
                                        " напечатайте 'r' и нажмите 'Enter'):" + Fore.RESET)
     input_lines = []
     while True:

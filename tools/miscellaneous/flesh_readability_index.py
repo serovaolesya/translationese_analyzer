@@ -62,7 +62,7 @@ def display_readability_index(flesh_idx):
 
     :param flesh_idx: float - Индекс удобочитаемости текста.
     """
-    print(Fore.YELLOW + Style.BRIGHT + "\n                   ИНДЕКС УДОБОЧИТАЕМОСТИ" + Fore.RESET)
+    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                   ИНДЕКС УДОБОЧИТАЕМОСТИ" + Fore.RESET)
     table = Table()
     table.add_column("Показатель", style="bold", justify="center", min_width=30)
     table.add_column("Значение", justify="center", min_width=20)

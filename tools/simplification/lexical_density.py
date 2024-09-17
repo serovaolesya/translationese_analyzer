@@ -7,7 +7,7 @@ from rich.table import Table
 
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.lemmatizators import lemmatize_words
-from tools.stop_words_extraction_removal import all_stopwords_sorted
+from tools.core.stop_words_extraction_removal import all_stopwords_sorted
 from tools.core.text_preparation import TextPreProcessor
 
 console = Console()

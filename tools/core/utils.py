@@ -37,12 +37,12 @@ def display_grammemes(for_n_grams=True):
     """
     if for_n_grams:
         print(
-            Fore.YELLOW + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ ЧАСТЕРЕЧНЫХ N-ГРАММОВ С ИСПОЛЬЗОВАНИЕМ PYMORPHY" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ ЧАСТЕРЕЧНЫХ N-ГРАММОВ С ИСПОЛЬЗОВАНИЕМ PYMORPHY" + Fore.RESET)
         print(
-            Fore.RED + Style.BRIGHT + "\nВНИМАТЕЛЬНО ПОСМОТРИТЕ НА ОБОЗНАЧЕНИЯ ЧАСТЕЙ РЕЧИ ПЕРЕД ТЕМ, КАК ПРОДОЛЖИТЬ" + Fore.RESET)
+            Fore.LIGHTRED_EX + Style.BRIGHT + "\nВНИМАТЕЛЬНО ПОСМОТРИТЕ НА ОБОЗНАЧЕНИЯ ЧАСТЕЙ РЕЧИ ПЕРЕД ТЕМ, КАК ПРОДОЛЖИТЬ" + Fore.RESET)
     else:
         print(
-            Fore.RED + Style.BRIGHT + "\nВНИМАТЕЛЬНО ПОСМОТРИТЕ НА ОБОЗНАЧЕНИЯ ЧАСТЕЙ РЕЧИ И ИХ КАТЕГОРИЙ ПЕРЕД ТЕМ, КАК ПРОДОЛЖИТЬ" + Fore.RESET)
+            Fore.LIGHTRED_EX + Style.BRIGHT + "\nВНИМАТЕЛЬНО ПОСМОТРИТЕ НА ОБОЗНАЧЕНИЯ ЧАСТЕЙ РЕЧИ И ИХ КАТЕГОРИЙ ПЕРЕД ТЕМ, КАК ПРОДОЛЖИТЬ" + Fore.RESET)
 
     table = Table()
     table.add_column("POS", no_wrap=True, justify="center", style="bold")
@@ -136,7 +136,7 @@ def display_morphological_annotation(sentences_info):
      частях речи и морфологических характеристиках.
     """
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
-    print(Fore.YELLOW + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
     print("" + Fore.LIGHTWHITE_EX + "*" * 100)
 
     def show_annot_info():
@@ -154,7 +154,7 @@ def display_morphological_annotation(sentences_info):
             break
         else:
             print(
-                Fore.RED + "\nНеверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
+                Fore.LIGHTRED_EX + "\nНеверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
             continue
 
     if sentences_info:
@@ -181,7 +181,7 @@ def display_morphological_annotation(sentences_info):
 
             start_index = end_index
             print(
-                Fore.WHITE + Style.BRIGHT + f"Отображено {start_index} предложений. Всего предложений: {total_sentences} " + Fore.RESET)
+                Fore.LIGHTWHITE_EX + Style.BRIGHT + f"Отображено {start_index} предложений. Всего предложений: {total_sentences} " + Fore.RESET)
             if start_index < total_sentences:
                 while True:
                     user_input = input(
@@ -189,7 +189,7 @@ def display_morphological_annotation(sentences_info):
                     if user_input in ["y", "n"]:
                         break
                     print(
-                        Fore.RED + "\nНеверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
+                        Fore.LIGHTRED_EX + "\nНеверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
 
                 if user_input == "n":
                     break

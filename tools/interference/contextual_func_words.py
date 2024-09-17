@@ -2,6 +2,8 @@
 import json
 import re
 from collections import defaultdict, Counter
+
+import nltk
 import pymorphy2
 from colorama import Fore, Style
 from nltk.corpus import stopwords
@@ -71,7 +73,7 @@ def contextual_function_words_in_trigrams(text, show_analysis=True):
     """
     if show_analysis:
         print(
-            Fore.YELLOW + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! В зависимости от размера текста подсчет может занять какое-то время. \nПожалуйста, будьте готовы подождать.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
     text_processor = TextPreProcessor()
@@ -220,9 +222,9 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
             if min_frequency > 0:
                 break
             else:
-                print(Fore.RED + "Ошибка: Значение должно быть больше 0." + Fore.RESET)
+                print(Fore.LIGHTRED_EX + "Ошибка: Значение должно быть больше 0." + Fore.RESET)
         except ValueError:
-            print(Fore.RED + "Ошибка: Введите числовое значение или нажмите 'Enter'.\n" + Fore.RESET)
+            print(Fore.LIGHTRED_EX + "Ошибка: Введите числовое значение или нажмите 'Enter'.\n" + Fore.RESET)
 
     for category in ['one_function_word', 'two_function_words', 'three_function_words']:
         if category == 'one_function_word':
@@ -253,7 +255,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
     if not for_corpus:
         print(
             Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВывести полные контексты триграммов с функциональными словами (y/n)? " + Fore.RESET)
-        print(Fore.RED + Style.BRIGHT + "Внимание! Контексты могут занять много места на экране.")
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Контексты могут занять много места на экране.")
         while True:
             choice = input().strip().lower()
 
@@ -266,7 +268,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
                 print(Fore.LIGHTRED_EX + "\nНеверный ввод. Пожалуйста, введите 'y' или 'n'." + Fore.RESET)
 
         print(
-            Fore.YELLOW + Style.BRIGHT + "\n            КОНТЕКСТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n            КОНТЕКСТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
         wait_for_enter_to_analyze()
         for category in ['one_function_word', 'two_function_words', 'three_function_words']:
             if category == 'one_function_word':

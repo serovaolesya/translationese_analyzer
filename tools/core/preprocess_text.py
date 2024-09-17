@@ -121,7 +121,7 @@ def adjust_text_length(text):
     wait_for_enter_to_analyze()
     print(
         Fore.LIGHTRED_EX + Style.BRIGHT + "\nВНИМАНИЕ!\n"
-        + Fore.GREEN + Style.BRIGHT + "Далее для удобства проверки перед каждым предложением в скобках будет "
+        + Fore.LIGHTGREEN_EX + Style.BRIGHT + "Далее для удобства проверки перед каждым предложением в скобках будет "
                                       "выведена информация о\nпервом и двух последних токенах в предложении. "
                                       "Первый токен должен совпасть с началом предложения,\nпоследние два - с последним"
                                       " словом предложения и финальным знаком препинания соответственно." + Fore.RESET)
@@ -165,7 +165,7 @@ def adjust_text_length(text):
             action = input(
                 Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите действие:" + Fore.LIGHTWHITE_EX +
                 Style.BRIGHT + "\n1) Удалить предложения случайным образом " +
-                Fore.GREEN + Style.BRIGHT + "(рекомендовано)" + Fore.LIGHTWHITE_EX
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + "(рекомендовано)" + Fore.LIGHTWHITE_EX
                 + Style.BRIGHT + "\n2) Выбрать предложения для удаления по индексу"
                 + Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите номер действия:\n" + Fore.RESET).strip()
 
@@ -273,12 +273,12 @@ def main():
 
     while True:
         mode = input(
-            Fore.YELLOW + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
 
         if mode.lower().strip() == 'f':
             while True:
                 print(
-                    Fore.YELLOW + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
                 print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_texts/")
                 print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_texts/")
                 print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_texts/")
@@ -309,7 +309,7 @@ def main():
 
         elif mode.lower().strip() == 't':
             while True:
-                print(Fore.YELLOW + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
+                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
                 print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "1. Аутентичный текст")
                 print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "2. Машинный перевод")
                 print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "3. Перевод, сделанный человеком")
@@ -365,7 +365,7 @@ def main():
 
 
 def get_full_input():
-    print(Fore.YELLOW + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
+    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
                                        " напечатайте 'r' и нажмите 'Enter'):" + Fore.RESET)
     input_lines = []
     while True:

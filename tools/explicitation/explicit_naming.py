@@ -35,7 +35,7 @@ def calculate_explicit_naming_ratio(text, show_analysis=True):
     else:
         ratio = 0
     if show_analysis:
-        print(Fore.YELLOW + Style.BRIGHT + "\nОТНОШЕНИЕ ЛИЧНЫХ МЕСТОИМЕНИЙ К ИМЕНАМ СОБСТВЕННЫМ\n              (EXPLICIT NAMING)" + Fore.RESET)
+        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nОТНОШЕНИЕ ЛИЧНЫХ МЕСТОИМЕНИЙ К ИМЕНАМ СОБСТВЕННЫМ\n              (EXPLICIT NAMING)" + Fore.RESET)
 
         table = Table()
 

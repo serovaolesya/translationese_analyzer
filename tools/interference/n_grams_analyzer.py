@@ -93,7 +93,7 @@ def character_ngrams(text, n_values=(1, 2, 3), show_analysis=True):
     :return tuple: Строки JSON с абсолютными и нормализованными частотами униграммов, биграммов и триграммов.
     """
     if show_analysis:
-        print(Fore.YELLOW + Style.BRIGHT + "\n                      ЧАСТОТЫ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
+        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                      ЧАСТОТЫ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! N-граммы '<' и '>' используются для обозначания начала и конца \nслов соответственно.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
@@ -216,9 +216,9 @@ def display_ngrams_summary(unigram_counts, unigram_freq, bigram_counts, bigram_f
             if min_frequency > 0:
                 break
             else:
-                print(Fore.RED + "Ошибка: Введите значение больше нуля.\n" + Fore.RESET)
+                print(Fore.LIGHTRED_EX + "Ошибка: Введите значение больше нуля.\n" + Fore.RESET)
         except ValueError:
-            print(Fore.RED + "Ошибка: Введите числовое значение или нажмите 'Enter'.\n" + Fore.RESET)
+            print(Fore.LIGHTRED_EX + "Ошибка: Введите числовое значение или нажмите 'Enter'.\n" + Fore.RESET)
     display_ngrams("Униграммы", unigram_counts, unigram_freq, min_frequency)
     display_ngrams("Биграммы", bigram_counts, bigram_freq, min_frequency)
     display_ngrams("Триграммы", trigram_counts, trigram_freq, min_frequency)

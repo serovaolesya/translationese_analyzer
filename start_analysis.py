@@ -2,6 +2,7 @@
 import json
 import re
 
+import nltk
 from natasha import (Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger,
                      NewsSyntaxParser, Doc)
 import pymorphy2
@@ -12,7 +13,7 @@ from rich.table import Table
 from tools.core import preprocess_text
 from tools.core.custom_punkt_tokenizer import sent_tokenize_with_abbr
 from tools.work_with_db import SaveToDatabase
-from tools.core.utils import (wait_for_enter_to_analyze, 
+from tools.core.utils import (wait_for_enter_to_analyze,
                               display_morphological_annotation,
                               format_morphological_features,
                               wait_for_enter_to_choose_opt)
@@ -51,6 +52,16 @@ from tools.miscellaneous.flesh_readability_index import flesh_readability_index_
 
 init(autoreset=True)
 console = Console()
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+try:
+    nltk.data.find('tokenizers/punkt_tab/russian')
+except LookupError:
+    nltk.download('punkt_tab')
 
 
 class CorpusText:
@@ -167,7 +178,7 @@ class CorpusText:
         token_positions_in_sent = extract_positions(self.text, show_analysis=False)  # OK
         if show_analysis:
             print(
-                Fore.YELLOW + Style.BRIGHT + "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ" + Fore.RESET)
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ" + Fore.RESET)
             print(
                 Fore.LIGHTGREEN_EX + Style.BRIGHT + "* Выводятся контексты предложений, длиннее 5 токенов." + Fore.RESET)
             wait_for_enter_to_analyze()
@@ -438,7 +449,7 @@ class CorpusText:
         if self.syntactic_analysis_result:
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.YELLOW + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
             print("" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(Fore.LIGHTGREEN_EX + Style.BRIGHT +
                   "В  программе используется разметка синтаксических зависимостей в формате (UD) Universal "
@@ -454,14 +465,14 @@ class CorpusText:
                 end = min(start + batch_size, total_sentences)
 
                 for i in range(start, end):
-                    print(Fore.YELLOW + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
+                    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
                     self.syntactic_analysis_result.sents[i].syntax.print()
                     print("\n" + Fore.LIGHTBLUE_EX + Style.BRIGHT + "*" * 150)
 
                 start = end  # Обновляем значение start до фактического конца отображенных предложений
                 print(
-                    Fore.WHITE + Style.BRIGHT + f"Отображено {start} предложений. Всего предложений:"
-                                                f" {total_sentences}" + Fore.RESET)
+                    Fore.LIGHTWHITE_EX + Style.BRIGHT + f"Отображено {start} предложений. Всего предложений:"
+                                                        f" {total_sentences}" + Fore.RESET)
 
                 if start < total_sentences:
                     user_input = input(
@@ -470,8 +481,8 @@ class CorpusText:
 
                     while user_input not in ['y', 'n']:
                         user_input = input(
-                            Fore.RED + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n):"
-                                       " \n" + Fore.RESET).strip().lower()
+                            Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n):"
+                                               " \n" + Fore.RESET).strip().lower()
 
                     if user_input == 'n':
                         break
@@ -491,12 +502,12 @@ class CorpusText:
                 show_analysis = True
                 break
             elif user_display_choice.lower() == 'n':
-                print(Fore.YELLOW + Style.BRIGHT + "\nПОЖАЛУЙСТА, ДОЖДИТЕСЬ ОКОНЧАНИЯ АНАЛИЗА.")
+                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nПОЖАЛУЙСТА, ДОЖДИТЕСЬ ОКОНЧАНИЯ АНАЛИЗА.")
                 show_analysis = False
                 break
             else:
                 print(
-                    Fore.RED + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
+                    Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
                 continue
 
         self.analyze_and_save(show_analysis)  # Выполняем анализ и сохраняем результаты
@@ -510,8 +521,8 @@ class CorpusText:
 
         morph_ann = self.get_morphological_annotation()
         print(
-            Fore.YELLOW + Style.BRIGHT + "\nМОРФОЛОГИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ")
-        print(Fore.RED + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nМОРФОЛОГИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ")
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
         while True:
             display_morph_ann = input(
                 Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nОтобразить морфологическую разметку текста (y/n)?\n")
@@ -521,12 +532,12 @@ class CorpusText:
             elif display_morph_ann.lower() == 'n':
                 break
             else:
-                print(Fore.RED + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n).")
+                print(Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n).")
                 continue
         self.get_syntactic_annotation()
 
-        print(Fore.YELLOW + Style.BRIGHT + "\nСИНТАКСИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ.")
-        print(Fore.RED + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
+        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nСИНТАКСИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ.")
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
         while True:
             display_synt_ann = input(
                 Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nОтобразить синтаксическую разметку текста (y/n)?\n")
@@ -536,7 +547,7 @@ class CorpusText:
             elif display_synt_ann.lower() == 'n':
                 break
             else:
-                print(Fore.RED + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n).")
+                print(Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n).")
                 continue
 
     def display_corpus_info(self):

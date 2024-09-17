@@ -6,7 +6,6 @@ from nltk.corpus import stopwords
 from data import conjunctions, particles, prepositions, pronouns
 from data.discource_markers import final_sci_dm_list
 
-
 nltk_stopwords_ru = stopwords.words("russian")
 
 # 1. Объединение всех списков stopwords в один
@@ -14,7 +13,6 @@ all_stopwords = set(conjunctions.conjunctions_list + prepositions.prepositions_l
                     + particles.particles_list + pronouns.pronouns_list + nltk_stopwords_ru)
 # 2. Сортировка stopwords по длине по убыванию
 all_stopwords_sorted = sorted(list(all_stopwords), key=len, reverse=True)
-
 
 
 def count_custom_stopwords(text):
@@ -51,7 +49,9 @@ def count_custom_stopwords(text):
 
     return stopwords_total_count_with_rep, sorted_stopwords, unique_stopwords
 
+
 patterns = r"[^А-Яа-яёЁ\-]+"  # Оставляем только кириллицу и дефис
+
 
 def remove_dm(text):
     """
@@ -83,12 +83,10 @@ def remove_dm(text):
     return text_cleaned, deleted_dms
 
 
-
 if __name__ == "__main__":
+    # Текст для примера (сгенерирован ИИ)
     text = """
-таким образом, однако, Оценка трофической активности почвенных, подводя итог', 'подводя итоги', 'в итоге', 'следует вывод.
-    """
-    # test = count_custom_stopwords(text)
-    # print(test)
+    Таким образом, анализ проведенных исследований показал, что внедрение новых технологий значительно повысило эффективность работы компании. Однако, несмотря на положительные результаты, остались некоторые области, требующие дальнейшего улучшения. Подводя итог, можно сказать, что проект был успешным, но есть еще над чем работать. Подводя итоги, мы можем отметить, что команда справилась с поставленными задачами на высоком уровне    """
 
-    print(remove_dm(text))
+    a = remove_dm(text)
+    print(a)

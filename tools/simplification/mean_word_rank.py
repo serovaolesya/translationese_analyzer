@@ -56,8 +56,8 @@ def calculate_mean_word_rank(text: str, show_analysis=True):
 
         print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + " Пояснение:" + Fore.RESET)
         print(
-            Fore.LIGHTGREEN_EX + Style.BRIGHT + " Средний ранг слов рассчитывается двумя способами:\n" + Fore.GREEN +
-            "  1." + Fore.LIGHTRED_EX + Style.BRIGHT + "mean_word_rank_1" + Fore.RESET + ": Все слова, которых нет в частотном списке слов РЯ, получают высший ранг 6000.\n" + Fore.GREEN +
+            Fore.LIGHTGREEN_EX + Style.BRIGHT + " Средний ранг слов рассчитывается двумя способами:\n" + Fore.LIGHTGREEN_EX +
+            "  1." + Fore.LIGHTRED_EX + Style.BRIGHT + "mean_word_rank_1" + Fore.RESET + ": Все слова, которых нет в частотном списке слов РЯ, получают высший ранг 6000.\n" + Fore.LIGHTGREEN_EX +
             "  2." + Fore.LIGHTRED_EX + Style.BRIGHT + "mean_word_rank_2" + Fore.RESET + ": Все слова, которых нет в частотном списке слов РЯ, игнорируются при подсчете.\n"
         )
         wait_for_enter_to_analyze()

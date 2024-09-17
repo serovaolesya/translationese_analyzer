@@ -15,7 +15,7 @@ from data.discource_markers import (final_sci_dm_list, topic_intro_dm, info_sequ
                                     less_categorical_attitude_dm, call_to_action_dm, joint_action, putting_emphasis_dm,
                                     refer_to_background_knowledge)
 from tools.core.utils import wait_for_enter_to_analyze
-from tools.stop_words_extraction_removal import remove_dm
+from tools.core.stop_words_extraction_removal import remove_dm
 
 console = Console()
 
@@ -270,7 +270,7 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
     marker_counts = ast.literal_eval(marker_counts_str)
 
     print(
-        Fore.YELLOW + Style.BRIGHT + "\n            НАЙДЕННЫЕ ДИСКУРСИВНЫЕ МАРКЕРЫ И КОЛИЧЕСТВА ИХ ВХОЖДЕНИЙ" + Fore.RESET)
+        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n            НАЙДЕННЫЕ ДИСКУРСИВНЫЕ МАРКЕРЫ И КОЛИЧЕСТВА ИХ ВХОЖДЕНИЙ" + Fore.RESET)
     print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"* Всего найдено {total_num_dms} ДМ" + Fore.RESET)
 
     table1 = Table()
@@ -320,7 +320,7 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
     wait_for_enter_to_analyze()
 
     print(
-        Fore.YELLOW + Style.BRIGHT + "\n              ЧАСТОТЫ НАЙДЕННЫХ ДИСКУРСИВНЫХ МАРКЕРОВ ПО КАТЕГОРИЯМ" + Fore.RESET)
+        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n              ЧАСТОТЫ НАЙДЕННЫХ ДИСКУРСИВНЫХ МАРКЕРОВ ПО КАТЕГОРИЯМ" + Fore.RESET)
     table2 = Table()
     table2.add_column("Категория ДМ\n", justify="left")
     table2.add_column("Абсолютная частота\n", justify="center")

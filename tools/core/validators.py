@@ -13,7 +13,7 @@ def validate_gender(gender_string):
         elif gender_string == "":
             return ""
         else:
-            gender_string = input(Fore.LIGHTRED_EX + "Ошибка: введите только 'м' и/или 'ж' (через запятую): ").strip()
+            gender_string = input(Fore.LIGHTRED_EX + "Ошибка: введите только 'м' и/или 'ж' (через запятую): " + Fore.RESET).strip()
 
 
 def validate_years(year_string, field_name, single_year=False):

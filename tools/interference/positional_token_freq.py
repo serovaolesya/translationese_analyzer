@@ -135,6 +135,7 @@ def print_frequencies(frequencies, raw_counts, min_count=1):
 
     for position in ['first', 'second', 'antepenultimate', 'penultimate', 'last']:
         print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"             Токены на позиции: {position.capitalize()}")
+        wait_for_enter_to_analyze()
         table = Table()
         table.add_column("Токен\n", no_wrap=True, min_width=15)
         table.add_column("Абсолютная частота", justify="center", width=15)

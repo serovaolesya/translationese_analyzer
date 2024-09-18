@@ -1,8 +1,20 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
+import os
+
+import nltk
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+try:
+    nltk.data.find('tokenizers/punkt_tab/russian')
+except LookupError:
+    nltk.download('punkt_tab')
+
 import json
 import re
 
-import nltk
 from natasha import (Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger,
                      NewsSyntaxParser, Doc)
 import pymorphy2
@@ -52,16 +64,6 @@ from tools.miscellaneous.flesh_readability_index import flesh_readability_index_
 
 init(autoreset=True)
 console = Console()
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-
-try:
-    nltk.data.find('tokenizers/punkt_tab/russian')
-except LookupError:
-    nltk.download('punkt_tab')
 
 
 class CorpusText:
@@ -572,27 +574,6 @@ def user_interface():
         choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер действия: \n")
 
         if choice == "1":
-            print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
-                                                      " напечатайте 'r' и нажмите 'Enter').")
-            print(
-                Fore.LIGHTRED_EX + "Если хотите вернуться в главное меню, с красной строки напечатайте 'x' и нажмите 'Enter'.")
-            text_lines = []
-            while True:
-                line = input()
-                if line.lower().strip() == "r":
-                    break
-                elif line.lower().strip() == "x":
-                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "Возвращение в главное меню.\n")
-                    break
-                text_lines.append(line)
-
-            if line.lower() == "x":
-                continue
-
-            input_text = '\n'.join(text_lines).strip()
-            if not input_text:
-                print(Fore.LIGHTRED_EX + Style.BRIGHT + "Текст не был введен. Попробуйте снова.\n")
-                continue
             while True:
                 print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите базу данных, в которую хотите"
                                                            " сохранить результат анализа текста:")
@@ -612,8 +593,9 @@ def user_interface():
                 else:
                     print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
 
+            text_to_analyse = text_input_for_analysis()
             print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nТекст будет сохранен в базу данных: {db}.")
-            corpus_text = CorpusText(text=input_text, db=db)
+            corpus_text = CorpusText(text=text_to_analyse, db=db)
             corpus_text.run_analysis_pipeline()
             wait_for_enter_to_choose_opt()
 
@@ -646,7 +628,6 @@ def user_interface():
                 print(Fore.LIGHTWHITE_EX + "2. База машинных переводов")
                 print(Fore.LIGHTWHITE_EX + "3. База переводов, выполненных человеком")
                 db_choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер базы данных:\n")
-                db = ""
                 if db_choice == "1":
                     db = "auth_texts_corpus.db"
                     break
@@ -658,7 +639,6 @@ def user_interface():
                     break
                 else:
                     print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
-
             corpus = CorpusText(db=db)
             corpus.display_corpus_info()
 
@@ -666,9 +646,85 @@ def user_interface():
             preprocess_text.main()
         elif choice == "5":
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nВыход из программы.")
-            break
+            exit()
         else:
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.\n")
+
+
+
+def process_text_from_file(file_path):
+    """Обрабатывает текст из файла и сохраняет результат."""
+    with open(file_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return text
+
+
+def text_input_for_analysis():
+    print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
+    print(
+        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                     ВВОД ТЕКСТА ДЛЯ ПОСЛЕДУЮЩЕГО АНАЛИЗА" + Fore.RESET)
+    print(Fore.LIGHTWHITE_EX + "*" * 100)
+    print(
+        Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Анализируемый текст уже должен быть предобработан и готов для последующего анализа." + Fore.RESET)
+
+    while True:
+        mode = input(
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
+        if mode.lower().strip() == 'f':
+            while True:
+                print(
+                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_ready/")
+                print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_ready/")
+                print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_ready/")
+                dir_choice = input(
+                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
+
+                if dir_choice == '1':
+                    directory = "auth_ready/"
+                elif dir_choice == '2':
+                    directory = "mt_ready/"
+                elif dir_choice == '3':
+                    directory = "ht_ready/"
+                else:
+                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nНеверный выбор. Попробуйте снова." + Fore.RESET)
+                    continue
+
+                file_name = input(Fore.LIGHTYELLOW_EX + "Введите название файла в"
+                                                        " выбранной директории "
+                                                        "(только файлы .txt): " + Fore.RESET).strip()
+                file_path = directory + file_name + '.txt'
+                if os.path.isfile(file_path):
+
+                    return process_text_from_file(file_path)
+                else:
+                    print(
+                        Fore.LIGHTRED_EX + Style.BRIGHT + "Файл не найден. Проверьте путь и попробуйте снова." + Fore.RESET)
+                continue
+        elif mode.lower().strip() == 't':
+            print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
+                                                      " напечатайте 'r' и нажмите 'Enter').")
+            print(
+                Fore.LIGHTRED_EX + "Если хотите вернуться в главное меню, с красной строки напечатайте 'x' и нажмите 'Enter'.")
+            text_lines = []
+            while True:
+                line = input()
+                if line.lower().strip() == "r":
+                    break
+                elif line.lower().strip() == "x":
+                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "Возвращение в главное меню.\n")
+                    break
+                text_lines.append(line)
+
+            if line.lower() == "x":
+                continue
+
+            input_text = '\n'.join(text_lines).strip()
+            if not input_text:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + "Текст не был введен. Попробуйте снова.\n")
+                continue
+            return input_text
+
 
 
 user_interface()

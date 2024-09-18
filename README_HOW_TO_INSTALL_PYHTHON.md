@@ -55,4 +55,4 @@
 Среда разработки позволит запустить приложение для анализа феномена Translationese. Мы рекомендуем установить одну из следующих IDE:
 
 - **PyCharm Community Edition**: [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/download/) - Версия Community Edition является бесплатной и подходит под наши задачи больше всего.
-- **VS Code**: [https://code.visualstudio.com](https://code.visualstudio.com)
+- **VS Code**: [https://code.visualstudio.com](https://code.visualstudio.com).

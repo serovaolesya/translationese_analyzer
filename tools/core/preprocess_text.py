@@ -111,7 +111,7 @@ def adjust_text_length(text):
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + f"Введенный текст содержит {current_sentence_count} предложений(я), желаемая"
                                               f" длина текста составляет {target_sentence_count} предложений(я)."
-                                              f"\nПожалуйста, либо выберите текст большей длины, и либо измените требуемое "
+                                              f"\nПожалуйста, либо выберите текст большей длины, либо измените требуемое "
                                               f"количество предложений.\nРезультаты удаления ссылок будут сохранены!" + Fore.RESET)
         wait_for_enter_to_analyze()
         return text
@@ -249,16 +249,16 @@ def process_text_from_file(file_path, init_dir):
     # Формирование нового имени файла
     dir_name, base_name = os.path.split(file_path)
     name, extension = os.path.splitext(base_name)
-    new_file_name = f"{name}_processed{extension}"
+    new_file_name = f"{name}{extension}"
     new_file_path = os.path.join(save_directory, new_file_name)
 
     with open(new_file_path, 'w', encoding='utf-8') as file:
         file.write(length_adjusted_text)
 
     print(
-        Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nРезультат успешно сохранен! "
+        Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nРезультат успешно сохранен в файл {new_file_name}! "
                                             f"Вы можете найти его в папке "
-                                            f"{folder_name} (она находится в корневой директории)." + Fore.RESET)
+                                            f"{folder_name} (она находится в\nкорневой директории)." + Fore.RESET)
     print(
         Fore.LIGHTRED_EX + Style.BRIGHT + f"Для дальнейшего анализа текста скопируйте текст из файла. "
                                           f"При необходимости отредактируйте его вручную.\n" + Fore.RESET)
@@ -273,7 +273,7 @@ def main():
 
     while True:
         mode = input(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
 
         if mode.lower().strip() == 'f':
             while True:
@@ -332,14 +332,20 @@ def main():
                 # Ввод текста вручную
                 text = get_full_input()
                 # Формирование имени файла для сохранения
-                file_name = input(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите имя файла для сохранения "
-                                                         "результата (без расширения): " + Fore.RESET).strip()
+                while True:
+                    file_name = input(
+                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
+
+                    if file_name:
+                        break
+                    else:
+                        print(
+                            Fore.LIGHTRED_EX + Style.BRIGHT + "Имя файла не может быть пустым. Пожалуйста, введите имя файла." + Fore.RESET)
 
                 # Создание папки для сохранения, если её нет
                 os.makedirs(save_directory, exist_ok=True)
 
-                file_path = os.path.join(save_directory, f"{file_name}_processed.txt")
+                file_path = os.path.join(save_directory, f"{file_name}.txt")
 
                 cleaned_text = remove_links(text)
                 wait_for_enter_to_analyze()
@@ -349,9 +355,9 @@ def main():
                     file.write(length_adjusted_text)
 
                 print(
-                    Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nРезультат успешно сохранен! "
-                                                        f"Вы можете найти его в папке {folder_name} "
-                                                        f"(она находится в корневой директории)." + Fore.RESET)
+                    Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nРезультат успешно сохранен в файл {file_name}.txt! "
+                                                        f"Вы можете найти его в папке {folder_name}"
+                                                        f" (она находится в\nкорневой директории)." + Fore.RESET)
                 print(
                     Fore.LIGHTRED_EX + Style.BRIGHT + f"Для дальнейшего анализа текста скопируйте текст из файла. "
                                                       f"При необходимости отредактируйте его вручную.\n" + Fore.RESET)
@@ -365,7 +371,7 @@ def main():
 
 
 def get_full_input():
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
                                        " напечатайте 'r' и нажмите 'Enter'):" + Fore.RESET)
     input_lines = []
     while True:

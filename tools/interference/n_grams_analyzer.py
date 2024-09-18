@@ -173,6 +173,7 @@ def display_ngrams(title, ngram_counts, normalized_counts, min_frequency=20):
     ngram_counts = json.loads(ngram_counts)
     normalized_counts = json.loads(normalized_counts)
     print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"                          {title.upper()}" + Fore.RESET)
+    wait_for_enter_to_analyze()
     table = Table()
 
     table.add_column("N-грамм\n", justify="center", no_wrap=True)

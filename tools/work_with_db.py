@@ -23,7 +23,7 @@ from tools.miscellaneous.punct_analysis import display_punctuation_analysis
 from tools.normalisation.repetition import print_word_occurrences_table
 from tools.explicitation.sci_dm_analysis import print_dm_analysis_results
 from tools.core.utils import wait_for_enter_to_analyze, wait_for_enter_to_choose_opt, display_morphological_annotation, \
-    display_grammemes, display_position_explanation
+    display_grammemes, display_position_explanation, get_syntactic_annotation, display_syntactic_annotation
 
 console = Console()
 init(autoreset=True)
@@ -269,10 +269,8 @@ class SaveToDatabase:
                     self.display_morphological_annotation(text_id)
                     wait_for_enter_to_choose_opt()
                 elif choice == "3":
-                    from start_analysis import CorpusText
-                    corpus = CorpusText(db=self.db_name, text=text_info[1])
-                    corpus.get_syntactic_annotation(False)
-                    corpus.display_syntactic_annotation()
+                    synt_annot = get_syntactic_annotation(text=text_info[1])
+                    display_syntactic_annotation(synt_annot)
                     wait_for_enter_to_choose_opt()
                 elif choice == "4":
                     self.display_simplification_analysis(text_id)
@@ -941,6 +939,8 @@ class SaveToDatabase:
                                    pos_trigrams_counts, pos_trigrams_freq)
 
             print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                      ЧАСТОТЫ БУКВЕННЫХ N-ГРАММОВ")
+            print(
+                Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! N-граммы '<' и '>' используются для обозначания начала и конца \nслов соответственно.\n" + Fore.RESET)
             display_ngrams_summary(char_unigram_counts, char_unigram_freq, char_bigram_counts, char_bigram_freq,
                                    char_trigram_counts, char_trigram_freq)
 
@@ -957,7 +957,7 @@ class SaveToDatabase:
             wait_for_enter_to_analyze()
             print_positions(token_positions_in_sent)
             print_trigram_tables_with_func_w(func_w_trigrams_freqs, func_w_trigram_with_pos_counts,
-                                             func_w_full_contexts)
+                                             func_w_full_contexts, True)
         else:
             print(
                 Fore.LIGHTRED_EX + Style.BRIGHT + "Результаты анализа интерференции для этого текста не найдены."
@@ -998,6 +998,7 @@ class SaveToDatabase:
             wait_for_enter_to_analyze()
             print_passive_verbs_ratio(passive_to_all_v_ratio,
                                       passive_verbs, passive_verbs_count, all_verbs, all_verbs_count)
+            wait_for_enter_to_analyze()
             display_readability_index(readability_index)
 
         else:
@@ -1081,7 +1082,7 @@ class SaveToDatabase:
 
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + '            СРЕДНИЕ ПОКАЗАТЕЛИ УНИВЕРСАЛИИ' +
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ УНИВЕРСАЛИИ' +
                 Fore.LIGHTRED_EX + Style.BRIGHT + ' NORMALISATION')
             print(Fore.LIGHTWHITE_EX + "*" * 80)
             table = Table()
@@ -1181,7 +1182,7 @@ class SaveToDatabase:
 
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + '              СРЕДНИЕ ПОКАЗАТЕЛИ УНИВЕРСАЛИИ'
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ УНИВЕРСАЛИИ'
                 + Fore.LIGHTRED_EX + Style.BRIGHT + ' EXPLICITATION')
             print(Fore.LIGHTWHITE_EX + "*" * 80)
 
@@ -1658,7 +1659,7 @@ class SaveToDatabase:
             wait_for_enter_to_analyze()
 
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ВЫВЕДЕНЫ СРЕДНИЕ ПОКАЗАТЕЛИ ДЛЯ ТРИГРАММОВ С 1,2,3 ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ\n" + Fore.RESET)
+            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nСРЕДНИЕ ПОКАЗАТЕЛИ ДЛЯ ТРИГРАММОВ С 1,2,3 ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ\n" + Fore.RESET)
         min_count = min_count_choice()
         for category, trigrams in func_w_trigrams_freqs_total.items():
             print(

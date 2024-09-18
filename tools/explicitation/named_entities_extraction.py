@@ -81,7 +81,7 @@ def display_entities(found_named_entities_str, found_entities_count):
         return
 
     print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n              НАЙДЕННЫЕ ИМЕНОВАННЫЕ СУЩНОСТИ И ИХ ТИПЫ" + Fore.RESET)
-    print(Fore.LIGHTRED_EX + Style.DIM + f"ВНИМАНИЕ! Иногда при распознавании именованных сущностей могут возникать ошибки. "
+    print(Fore.LIGHTRED_EX + Style.BRIGHT + f"ВНИМАНИЕ! Иногда при распознавании именованных сущностей могут возникать ошибки. "
                                  f"\nПожалуйста, будьте внимательны и учитывайте это при анализе результатов." + Fore.RESET)
     wait_for_enter_to_analyze()
     print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\n* Всего найдено {found_entities_count} сущностей" + Fore.RESET)

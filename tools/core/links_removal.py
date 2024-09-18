@@ -162,8 +162,15 @@ def main():
                 # Ввод текста вручную
                 text = get_full_input()
                 # Формирование имени файла для сохранения
-                file_name = input(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
+                while True:
+                    file_name = input(
+                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
+
+                    if file_name:  # Проверяем, что имя файла не пустое
+                        break
+                    else:
+                        print(
+                            Fore.LIGHTRED_EX + Style.BRIGHT + "Имя файла не может быть пустым. Пожалуйста, введите имя файла." + Fore.RESET)
 
                 # Создание папки для сохранения, если её нет
                 os.makedirs(save_directory, exist_ok=True)
@@ -191,7 +198,7 @@ def main():
 
 
 def get_full_input():
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
                                        " напечатайте 'r' и нажмите 'Enter'):" + Fore.RESET)
     input_lines = []
     while True:

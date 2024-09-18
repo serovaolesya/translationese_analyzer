@@ -1,4 +1,18 @@
 from colorama import Fore, Style
+
+from natasha import (Segmenter,
+                     MorphVocab,
+
+                     NewsEmbedding,
+                     NewsMorphTagger,
+                     NewsSyntaxParser,
+                     NewsNERTagger,
+
+                     PER,
+                     NamesExtractor,
+
+                     Doc
+                     )
 from prettytable import PrettyTable
 from rich.console import Console
 from rich.table import Table
@@ -136,7 +150,8 @@ def display_morphological_annotation(sentences_info):
      частях речи и морфологических характеристиках.
     """
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+    print(
+        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
     print("" + Fore.LIGHTWHITE_EX + "*" * 100)
 
     def show_annot_info():
@@ -230,3 +245,79 @@ def display_position_explanation():
     print(Fore.LIGHTWHITE_EX + Style.BRIGHT + " - penultimate - Предпоследний токен" + Fore.RESET)
     print(Fore.LIGHTWHITE_EX + Style.BRIGHT + " - last - Последний токен" + Fore.RESET)
     wait_for_enter_to_analyze()
+
+
+def get_syntactic_annotation(text):
+    """Метод для выполнения синтаксической разметки текста с использованием Natasha."""
+    doc = Doc(text)
+    segmenter = Segmenter()
+    emb = NewsEmbedding()
+    morph_tagger = NewsMorphTagger(emb)
+    syntax_parser = NewsSyntaxParser(emb)
+    # Сегментация на предложения для дальнейшего анализа
+    doc.segment(segmenter)
+    # Морфологический анализ для дальнейшего синтаксического анализа
+    doc.tag_morph(morph_tagger)
+    # Анализ синтаксиса
+    doc.parse_syntax(syntax_parser)
+    # Собираем синтаксическую разметку в строку
+    tokens_info = []
+    i = 0
+
+    for token in doc.tokens:
+        # Получаем информацию о каждом токене
+        token_info = {
+            f"TOKEN {i + 1}": token.text,
+            "id": token.id,
+            "head_id": token.head_id,
+            "pos": token.pos,
+            "dependency": token.rel,
+            "features": token.feats
+        }
+        tokens_info.append(token_info)
+        i += 1
+
+    return doc
+
+
+def display_syntactic_annotation(doc):
+    """Метод для отображения синтаксической разметки в виде древовидной структуры, аналогичной Natasha."""
+    print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
+    print(
+        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+    print("" + Fore.LIGHTWHITE_EX + "*" * 100)
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT +
+          "В  программе используется разметка синтаксических зависимостей в формате (UD) Universal "
+          "Dependencies.\n"
+          "Cинтаксический анализ будет представлен в виде древовидной структуры. На на экран будет выводиться по"
+          "\n5 предложений текста.\n" + Fore.RESET)
+    wait_for_enter_to_analyze()
+    total_sentences = len(doc.sents)
+    start = 0
+    batch_size = 5
+
+    while start < total_sentences:
+        end = min(start + batch_size, total_sentences)
+
+        for i in range(start, end):
+            print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
+            doc.sents[i].syntax.print()
+            print("\n" + Fore.LIGHTBLUE_EX + Style.BRIGHT + "*" * 150)
+
+        start = end  # Обновляем значение start до фактического конца отображенных предложений
+        print(
+            Fore.LIGHTWHITE_EX + Style.BRIGHT + f"Отображено {start} предложений. Всего предложений:"
+                                                f" {total_sentences}" + Fore.RESET)
+
+        if start < total_sentences:
+            user_input = input(
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
+                                                     " \n" + Fore.RESET).strip().lower()
+
+            while user_input not in ['y', 'n']:
+                user_input = input(
+                    Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n):"
+                                       " \n" + Fore.RESET).strip().lower()
+
+            if user_input == 'n':
+                break

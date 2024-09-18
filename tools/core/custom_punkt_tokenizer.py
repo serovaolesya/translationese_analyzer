@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
 from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
 
-from data.abbreviations import sorted_abbrev
+from tools.core.data.abbreviations import sorted_abbrev
 
 
 def sent_tokenize_with_abbr(text):

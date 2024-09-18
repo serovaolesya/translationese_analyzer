@@ -2,7 +2,7 @@
 import re
 import sys
 
-from data.abbreviations import abbreviations_with_point
+from tools.core.data.abbreviations import abbreviations_with_point
 
 
 class TextPreProcessor:

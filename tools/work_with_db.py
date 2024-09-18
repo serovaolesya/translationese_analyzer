@@ -71,10 +71,12 @@ class SaveToDatabase:
         if num_texts > 0:
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                      ВЫБРАН" + Fore.LIGHTRED_EX + Style.BRIGHT + f" {corpus_name}" + Fore.RESET)
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                      ВЫБРАН" + Fore.LIGHTRED_EX
+                + Style.BRIGHT + f" {corpus_name}" + Fore.RESET)
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВСЕГО ТЕКСТОВ В ВЫБРАННОМ КОРПУСЕ:" + Fore.LIGHTRED_EX + Style.BRIGHT + f" {num_texts}" + Fore.RESET)
+                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВСЕГО ТЕКСТОВ В ВЫБРАННОМ КОРПУСЕ:"
+                + Fore.LIGHTRED_EX + Style.BRIGHT + f" {num_texts}" + Fore.RESET)
 
             while True:
                 print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n Выберите опцию: ")
@@ -122,17 +124,19 @@ class SaveToDatabase:
                         texts = self.cursor.fetchall()
                         corpus_set = set(text[0] for text in texts)
 
-                        pmi_values, total_above_zero = calculate_pmi(corpus_set=corpus_set)
+                        pmi_values, total_above_zero, normalized_bigrams_above_zero = calculate_pmi(corpus_set=corpus_set)
 
                         # Таблица для отображения результатов PMI
                         print(
                             Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"\nPMI БИГРАММОВ КОРПУСА" + Fore.RESET)
                         print(
                             Fore.LIGHTWHITE_EX + Style.BRIGHT + f'Всего найдено {total_above_zero} биграммов с PMI > 0.')
-
+                        print(
+                            Fore.LIGHTWHITE_EX + Style.BRIGHT + f'Нормализованная частота биграммов с PMI>0: '
+                                                                f'{normalized_bigrams_above_zero}.')
                         while True:
                             print(
-                                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить биграммы и их PMI(y/n)?")
+                                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nОтобразить биграммы и их PMI(y/n)?")
                             show_bigrams_pmi = input()
                             if show_bigrams_pmi.lower() == 'y':
                                 print(
@@ -174,7 +178,7 @@ class SaveToDatabase:
                     break
                 else:
                     print(
-                        Fore.LIGHTRED_EX + "Неправильный выбор. Пожалуйста, выберите один из предложенных вариантов.\n" + Fore.RESET)
+                        Fore.LIGHTRED_EX + Style.BRIGHT + "Неправильный выбор. Пожалуйста, выберите один из предложенных вариантов.\n" + Fore.RESET)
                     continue
 
         else:
@@ -935,6 +939,7 @@ class SaveToDatabase:
             print(Fore.LIGHTWHITE_EX + "*" * 80)
 
             print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                      ЧАСТОТЫ ЧАСТЕРЕЧНЫХ N-ГРАММОВ")
+            display_grammemes()
             display_ngrams_summary(pos_unigrams_counts, pos_unigrams_freq, pos_bigrams_counts, pos_bigrams_freq,
                                    pos_trigrams_counts, pos_trigrams_freq)
 

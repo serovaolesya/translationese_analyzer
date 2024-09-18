@@ -3,8 +3,8 @@ import re
 
 from nltk.corpus import stopwords
 
-from data import conjunctions, particles, prepositions, pronouns
-from data.discource_markers import final_sci_dm_list
+from tools.core.data import pronouns, prepositions, particles, conjunctions
+from tools.core.data.discource_markers import final_sci_dm_list
 
 nltk_stopwords_ru = stopwords.words("russian")
 

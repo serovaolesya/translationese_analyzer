@@ -3,7 +3,6 @@ import json
 import re
 from collections import defaultdict, Counter
 
-import nltk
 import pymorphy2
 from colorama import Fore, Style
 from nltk.corpus import stopwords
@@ -11,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from tools.core.custom_punkt_tokenizer import sent_tokenize_with_abbr
-from data import conjunctions, particles, prepositions, pronouns
+from tools.core.data import pronouns, prepositions, particles, conjunctions
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.text_preparation import TextPreProcessor
 

@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 from rich.console import Console
 from rich.table import Table
 
-from data import conjunctions, discource_markers, particles, prepositions, pronouns
+from tools.core.data import pronouns, prepositions, particles, conjunctions
 from tools.core.utils import wait_for_enter_to_analyze
 
 console = Console()

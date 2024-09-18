@@ -9,6 +9,9 @@ __pycache__/
 # Игнорирование файлов баз данных
 *.db
 
+# macOS
+.DS_Store
+
 
 # Distribution / packaging
 .Python

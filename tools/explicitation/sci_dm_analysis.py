@@ -8,12 +8,12 @@ from colorama import Style, Fore
 from rich.console import Console
 from rich.table import Table
 
-from data.discource_markers import (final_sci_dm_list, topic_intro_dm, info_sequence, illustration_dm,
-                                    material_sequence, conclusion_dm, intro_new_addit_info,
-                                    info_explanation_or_repetition,
-                                    contrast_dm, examples_introduction_dm, author_opinion, categorical_attitude_dm,
-                                    less_categorical_attitude_dm, call_to_action_dm, joint_action, putting_emphasis_dm,
-                                    refer_to_background_knowledge)
+from tools.core.data.discource_markers import (final_sci_dm_list, topic_intro_dm, info_sequence, illustration_dm,
+                                               material_sequence, conclusion_dm, intro_new_addit_info,
+                                               info_explanation_or_repetition,
+                                               contrast_dm, examples_introduction_dm, author_opinion, categorical_attitude_dm,
+                                               less_categorical_attitude_dm, call_to_action_dm, joint_action, putting_emphasis_dm,
+                                               refer_to_background_knowledge)
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.stop_words_extraction_removal import remove_dm
 

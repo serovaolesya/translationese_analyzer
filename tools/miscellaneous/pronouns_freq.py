@@ -6,7 +6,7 @@ from colorama import Fore, Style
 from rich.console import Console
 from rich.table import Table
 
-from data.pronouns import pronouns_analysis_list
+from tools.core.data.pronouns import pronouns_analysis_list
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.lemmatizators import lemmatize_words
 

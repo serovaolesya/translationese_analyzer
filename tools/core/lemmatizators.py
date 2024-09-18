@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 from pymorphy2 import MorphAnalyzer
 
 from tools.core.custom_punkt_tokenizer import sent_tokenize_with_abbr
-from data import conjunctions, particles, prepositions, pronouns
+from tools.core.data import pronouns, prepositions, particles, conjunctions
 from tools.core.text_preparation import TextPreProcessor
 
 nltk_stopwords_ru = stopwords.words("russian")

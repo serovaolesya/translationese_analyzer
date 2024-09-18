@@ -5,7 +5,7 @@ from nltk.tokenize import word_tokenize
 from rich.console import Console
 from rich.table import Table
 
-from data.pronouns import pronouns_analysis
+from tools.core.data.pronouns import pronouns_analysis
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.explicitation.named_entities_extraction import extract_entities
 

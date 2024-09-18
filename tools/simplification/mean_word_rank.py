@@ -3,7 +3,7 @@ from colorama import Fore, Style
 from rich.console import Console
 from rich.table import Table
 
-from data.lang_word_frequencies import words_by_freq
+from tools.core.data.lang_word_frequencies import words_by_freq
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.lemmatizators import lemmatize_words
 

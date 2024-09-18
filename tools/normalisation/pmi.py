@@ -108,7 +108,7 @@ def calculate_pmi(corpus_directory=None, corpus_set=None):
     normalized_bigrams_above_zero = total_bigrams_above_zero / total_bigrams_count if total_bigrams_count > 0 else 0
 
     sorted_pmi_values = sorted(pmi_values.items(), key=lambda x: x[1], reverse=True)
-    return dict(sorted_pmi_values), total_bigrams_above_zero
+    return dict(sorted_pmi_values), total_bigrams_above_zero, normalized_bigrams_above_zero
 
 
 def display_pmi_table(pmi_values):
@@ -191,5 +191,6 @@ if __name__ == "__main__":
     # Добавляем тексты в set
     texts_set.update([text_1, text_2])
 
-    example_2, count_above_zero = calculate_pmi(corpus_set=texts_set)
+    example_2, count_above_zero, normalized_bigrams_above_zero = calculate_pmi(corpus_set=texts_set)
     display_pmi_table(example_2)
+    print(normalized_bigrams_above_zero)

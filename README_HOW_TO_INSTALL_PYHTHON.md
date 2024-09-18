@@ -9,11 +9,13 @@
 
 
 2. Перейдите в раздел Downloads. Вы попадёте на страницу загрузки интерпретатора.  Выберите версию 3.9.10. и нажмите Download.
-![img.png](tools/core/images/img.png)
+![image](https://github.com/user-attachments/assets/1b5c6007-20f0-4657-98bf-c4a65c830367)
+
 
 
 3. Вы окажетесь на странице с информацией о нужной вам версии интерпретатора Python. Проскролльте её вниз — до таблички с файлами на скачивание. Выберите файл, подходящий для разрядности вашей операционной системы, и скачайте его:
-![img_1.png](tools/core/images/img_1.png)
+![image](https://github.com/user-attachments/assets/07c22f7e-4908-4e32-87c1-1efbb6cbce13)
+
 Чтобы узнать разрядность вашей операционной системы, выполните следующие шаги:
    - откройте меню «Пуск»,
    - выберите «Все приложения»,
@@ -28,7 +30,7 @@
 
 
 2. Когда откроется окно установки, **обязательно поставьте галочку (!)** возле пункта Add Python 3.9 to PATH и нажмите Install now:
-![img.png](tools/core/images/img_path.png)
+![image](https://github.com/user-attachments/assets/9b25c3c6-8aaf-4082-a73f-7985e4f56b53)
 
 
 3. Нажмите на **Install Now** для начала установки. 
@@ -54,5 +56,5 @@
 
 Среда разработки позволит запустить приложение для анализа феномена Translationese. Мы рекомендуем установить одну из следующих IDE:
 
-- **PyCharm Community Edition**: [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/download/) - Версия Community Edition является бесплатной и подходит под наши задачи больше всего.
+- **PyCharm Community Edition**: [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/download/) - Версия **Community Edition** является бесплатной и подходит под наши задачи больше всего.
 - **VS Code**: [https://code.visualstudio.com](https://code.visualstudio.com).

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
-import os
-
 import nltk
 try:
     nltk.data.find('corpora/stopwords')
@@ -13,6 +11,7 @@ except LookupError:
     nltk.download('punkt_tab')
 
 import json
+import os
 import re
 
 from natasha import (Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger,
@@ -361,7 +360,7 @@ class CorpusText:
         all_sentences_info = []
         for sentence in sentences:
             tokens_morph_info = {}
-            text = re.sub(r'([\.\,\!\?\;\%\)\)\[\]\:\—])', r' \1 ', sentence)
+            text = re.sub(r'([\.\,\!\"\„\”\«\»\‘\’\(\)\?\;\%\)\)\[\]\:\—])', r' \1 ', sentence)
             punctuation = set(".,!?;%)([]—")
             token_index = 1
 

@@ -55,10 +55,14 @@
 
 - **PyCharm Community Edition**: [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/download/) - Версия **Community Edition** является бесплатной и подходит под наши задачи больше всего.
 - При скачивании будьте внимательны, выберите именно версию **Community Edition**:
+
   ![image](https://github.com/user-attachments/assets/17e031f4-be9d-4e2c-891d-30f135032ee4)
 
+
 - При установке IDE обязательно поставьте галочки в следующих пунктах:
+
   ![image](https://github.com/user-attachments/assets/53213956-85a3-41cf-bad3-c861fd8681a0)
+
   Завершите установку. Вероятно, программа попросит Вас перезагрузить компьютер. Сделайте это.
 
 

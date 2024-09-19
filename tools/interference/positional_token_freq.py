@@ -46,9 +46,8 @@ def calculate_position_frequencies(text, show_analysis=True):
     for sent in sentences:
         sent = text_processor.process_text(sent)
         # Разделение слов и знаков препинания пробелами
-        sent = re.sub(r'([.,!?;)(])', r' \1 ', sent)  # Пробелы вокруг знаков препинания
-
-        sent = re.sub(r'[^а-яА-ЯёЁA-Za-z0-9\s.,)(!?;-]', '', sent)
+        sent = re.sub(r'(["„”«»‘’.,!?;")(/\\])', r' \1 ', sent)
+        sent = re.sub(r'[^а-яА-ЯёЁA-Za-z0-9\s.",)(!?;-]', '', sent)
         tokens = word_tokenize(sent, language="russian")
         if len(tokens) < 5:
             continue

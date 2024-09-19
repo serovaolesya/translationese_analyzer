@@ -2,6 +2,13 @@
     <h1>SCIENTIFIC PAPER TRANSLATIONESE ANALYSER</h1>
 </div>
 
+
+<div style="text-align: right; margin-right: 20px;">
+    <p><strong>Разработчик:</strong> Серова Олеся Усмановна
+    <br><strong>Email:</strong> serovaolesyau@gmail.com</p>
+</div>
+
+
  <div align="center">
     <h2>Программа для анализа феномена Translationese в переводах научных статей с английского языка на русский</h4>
 </div>

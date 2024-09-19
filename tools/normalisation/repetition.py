@@ -115,7 +115,7 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
     word_table = Table()
 
     word_table.add_column("Кол-во вхождений", style="bold", justify="center", min_width=15)
-    word_table.add_column("Слова", max_width=80)
+    word_table.add_column("Знаменательные слова", max_width=80)
 
     grouped_word_counts = defaultdict(list)
     for word, count in sorted_content_word_counts.items():
@@ -130,6 +130,7 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
         word_table.add_row(str(count), ", ".join(words))
 
     console.print(word_table)
+    wait_for_enter_to_analyze()
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
 
 
 <div style="text-align: right; margin-right: 20px;">
-    <p><strong>Разработчик:</strong> Серова Олеся Усмановна
+    <p><strong>Разработчик:</strong> Серова Олеся
     <br><strong>Email:</strong> serovaolesyau@gmail.com</p>
 </div>
 

@@ -72,8 +72,9 @@ def contextual_function_words_in_trigrams(text, show_analysis=True):
     """
     if show_analysis:
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
-        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! В зависимости от размера текста подсчет может занять какое-то время. \nПожалуйста, будьте готовы подождать.\n" + Fore.RESET)
+            Fore.GREEN + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
+        print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! В зависимости от размера текста подсчет может занять "
+                                                "какое-то время. \nПожалуйста, будьте готовы подождать.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
     text_processor = TextPreProcessor()
     sentences = sent_tokenize_with_abbr(text)
@@ -208,7 +209,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
         """
     if for_corpus:
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С 1,2,3  ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
+            Fore.GREEN + Style.BRIGHT + "\n           ЧАСТОТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С 1,2,3  ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
         wait_for_enter_to_analyze()
     sorted_normalized_freqs = json.loads(sorted_normalized_freqs)
     pos_trigram_counts = json.loads(pos_trigram_counts_json)
@@ -237,7 +238,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
             show_text = 'ТРИГРАММЫ С ДВУМЯ ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ И ОДНИМ МАРКЕРОМ POS В СОСТАВЕ'
         elif category == 'three_function_words':
             show_text = 'ТРИГРАММЫ С ТРЕМЯ ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ В СОСТАВЕ'
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n* " + show_text + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n* " + show_text + Fore.RESET)
         wait_for_enter_to_analyze()
         table = Table()
         table.add_column("Триграмм\n", no_wrap=True, style="bold", max_width=40)
@@ -273,7 +274,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
                 print(Fore.LIGHTRED_EX + "\nНеверный ввод. Пожалуйста, введите 'y' или 'n'." + Fore.RESET)
 
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n            КОНТЕКСТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
+            Fore.GREEN + Style.BRIGHT + "\n            КОНТЕКСТЫ ЧАСТЕРЕЧНЫХ ТРИГРАММОВ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ" + Fore.RESET)
         wait_for_enter_to_analyze()
         for category in ['one_function_word', 'two_function_words', 'three_function_words']:
             if category == 'one_function_word':
@@ -282,7 +283,7 @@ def print_trigram_tables_with_func_w(sorted_normalized_freqs, pos_trigram_counts
                 show_text = 'ТРИГРАММОВ С ДВУМЯ ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ И ОДНИМ МАРКЕРОМ POS В СОСТАВЕ'
             elif category == 'three_function_words':
                 show_text = 'ТРИГРАММОВ С ТРЕМЯ ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ В СОСТАВЕ'
-            print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n* КОНТЕКСТЫ " + show_text + Fore.RESET)
+            print(Fore.GREEN + Style.BRIGHT + "\n* КОНТЕКСТЫ " + show_text + Fore.RESET)
             wait_for_enter_to_analyze()
             table = Table()
             table.add_column("С POS-тегами", no_wrap=True, width=40)

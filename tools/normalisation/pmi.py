@@ -90,22 +90,21 @@ def calculate_pmi(corpus_directory=None, corpus_set=None):
             all_bigrams.update(bigrams)  # Обновляем частоты биграмм
 
     total_word_number = sum(word_counts.values())
+    total_bigram_number = sum(all_bigrams.values())
 
     # Вычисляем вероятности для слов и биграмм
     p_word = {word: count / total_word_number for word, count in word_counts.items()}
-    p_bigram = {bigram: count / total_word_number for bigram, count in all_bigrams.items()}
+    p_bigram = {bigram: count / total_bigram_number for bigram, count in all_bigrams.items()}
 
     pmi_values = {}
-
     for bigram, count in all_bigrams.items():
         w1, w2 = bigram
         pmi = math.log2(p_bigram[bigram] / (p_word[w1] * p_word[w2]))
         if pmi > 0:
             pmi_values[bigram] = pmi
             total_bigrams_above_zero += 1  # Увеличиваем счетчик биграммов с положительным PMI
-        total_bigrams_count += 1  # Увеличиваем общий счётчик биграммов
 
-    normalized_bigrams_above_zero = total_bigrams_above_zero / total_bigrams_count if total_bigrams_count > 0 else 0
+    normalized_bigrams_above_zero = total_bigrams_above_zero / len(all_bigrams) if len(all_bigrams) > 0 else 0
 
     sorted_pmi_values = sorted(pmi_values.items(), key=lambda x: x[1], reverse=True)
     return dict(sorted_pmi_values), total_bigrams_above_zero, normalized_bigrams_above_zero
@@ -133,7 +132,7 @@ def display_pmi_table(pmi_values):
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nОшибка! Введите числовое значение.")
 
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"\n             БИГРАММЫ И ИХ ЗНАЧЕНИЯ PMI" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + f"\n             БИГРАММЫ И ИХ ЗНАЧЕНИЯ PMI" + Fore.RESET)
     table = Table()
     table.add_column("№", justify="center")
     table.add_column("Биграмма", justify="center")
@@ -148,7 +147,7 @@ def display_pmi_table(pmi_values):
 
     console.print(table)
 
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"Найдено {len(filtered_bigrams)} биграммов с PMI > {min_pmi}.\n")
+    print(Fore.GREEN + Style.BRIGHT + f"Найдено {len(filtered_bigrams)} биграммов с PMI > {min_pmi}.\n")
 
 if __name__ == "__main__":
 

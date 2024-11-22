@@ -81,7 +81,7 @@ def display_punctuation_analysis(normalized_frequency_json, punct_to_all_punct_f
     punctuation_counts = json.loads(punctuation_counts_json)
 
     console = Console()
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                     ЧАСТОТЫ ЗНАКОВ ПРЕПИНАНИЯ" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + "\n                     ЧАСТОТЫ ЗНАКОВ ПРЕПИНАНИЯ" + Fore.RESET)
 
     table = Table()
 

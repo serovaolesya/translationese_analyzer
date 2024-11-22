@@ -33,7 +33,7 @@ def calculate_position_frequencies(text, show_analysis=True):
         и абсолютными частотами токенов в этих позициях. Частоты округлены до 3 знаков после запятой.
     """
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n             ПОЗИЦИОННАЯ ЧАСТОТА ТОКЕНОВ\n" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n             ПОЗИЦИОННАЯ ЧАСТОТА ТОКЕНОВ\n" + Fore.RESET)
         print(
             Fore.LIGHTGREEN_EX + Style.BRIGHT + "Учитываются предложения, длина которых больше 5 токенов." + Fore.RESET)
 
@@ -133,7 +133,7 @@ def print_frequencies(frequencies, raw_counts, min_count=1):
     min_count = min_count_choice_for_posiitions()
 
     for position in ['first', 'second', 'antepenultimate', 'penultimate', 'last']:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"             Токены на позиции: {position.capitalize()}")
+        print(Fore.GREEN + Style.BRIGHT + f"             Токены на позиции: {position.capitalize()}")
         wait_for_enter_to_analyze()
         table = Table()
         table.add_column("Токен\n", no_wrap=True, min_width=15)

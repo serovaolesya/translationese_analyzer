@@ -54,13 +54,13 @@ def calculate_lexical_density(text, show_analysis=True):
                                        'ADVB'} and token.normal_form not in {'быть', 'являться'}]
     if len(content_words) == 0:
         if show_analysis:
-            print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n        ЛЕКСИЧЕСКАЯ ПЛОТНОСТЬ ТЕКСТА")
-            print(Fore.LIGHTWHITE_EX + "В тексте нет слов для анализа лексической плотности.")
+            print(Fore.GREEN + Style.BRIGHT + "\n        ЛЕКСИЧЕСКАЯ ПЛОТНОСТЬ ТЕКСТА")
+            print(Fore.LIGHTRED_EX + "В тексте нет слов для анализа лексической плотности.")
         return 0
     lexical_density = round(len(content_words) / all_words * 100, 3)
 
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n        ЛЕКСИЧЕСКАЯ ПЛОТНОСТЬ ТЕКСТА" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n        ЛЕКСИЧЕСКАЯ ПЛОТНОСТЬ ТЕКСТА" + Fore.RESET)
 
         table = Table()
         table.add_column("Параметр", justify="left", no_wrap=True, min_width=30, style="bold")

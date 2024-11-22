@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
-from collections import Counter
+import json
+from collections import Counter, defaultdict
 
 from colorama import Fore, Style
 from rich.console import Console
@@ -10,6 +11,28 @@ from tools.core.utils import wait_for_enter_to_analyze
 
 console = Console()
 patterns = r"[^А-Яа-яёЁa-zA-Z\-]+"
+
+
+def count_types_in_text(text):
+    """
+    Лемматизирует текст, подсчитывает количество знаменательных частей речи и возвращает результат в формате JSON.
+
+    Функция принимает текст, лемматизирует его, затем подсчитывает, как часто встречаются знаменательные части речи
+    (существительные, глаголы, прилагательные и наречия). В конце результат выводится в формате JSON.
+
+    :param text: Строка текста, который необходимо проанализировать.
+    :return: JSON-объект, содержащий абсолютную частоту встречаемости знаменательных слов.
+    """
+    words = lemmatize_words_without_stopwords(text.lower(), patterns)
+    word_list = [token.normal_form for token in words]
+    significant_words_count = defaultdict(int)
+
+    for word in word_list:
+        significant_words_count[word] += 1
+
+    result_json = json.dumps(significant_words_count, ensure_ascii=False, indent=4)
+
+    return result_json
 
 
 def find_n_most_frequent_words(text, values=(50,), show_analysis=True):
@@ -32,7 +55,7 @@ def find_n_most_frequent_words(text, values=(50,), show_analysis=True):
         frequent_words[n] = dict(sorted(normalized_frequencies.items(), key=lambda item: item[1], reverse=True)[:n])
 
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n     НАИБОЛЕЕ ЧАСТОТНЫЕ 50 СЛОВ ТЕКСТА" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n     НАИБОЛЕЕ ЧАСТОТНЫЕ 50 СЛОВ ТЕКСТА" + Fore.RESET)
         wait_for_enter_to_analyze()
         for n, words in frequent_words.items():
             table = Table()
@@ -62,4 +85,5 @@ if __name__ == "__main__":
     деревьев. Где-то рядом слышался тихий плеск воды из фонтана. Люди начинали расходиться по домам, постепенно покидая 
     парк. И вот, когда город погрузился в вечерние сумерки, наступила долгожданная тишина.
     """
-    find_n_most_frequent_words(text)
+    a = count_types_in_text(text)
+    print(a)

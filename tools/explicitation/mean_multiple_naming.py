@@ -54,7 +54,7 @@ def calculate_mean_multiple_naming(text, show_analysis=True):
     multiple_entities_count = len(multiple_entities)
     mean_multiple_naming = round(sum(lengths) / entities_count, 3) if lengths else 0
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                СРЕДНЯЯ ДЛИНА ИМЕНОВАННЫХ СУЩНОСТЕЙ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n                СРЕДНЯЯ ДЛИНА ИМЕНОВАННЫХ СУЩНОСТЕЙ" + Fore.RESET)
         wait_for_enter_to_analyze()
         table = Table()
 

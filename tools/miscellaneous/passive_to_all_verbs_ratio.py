@@ -80,7 +80,7 @@ def print_passive_verbs_ratio(ratio, passive_verbs_str, passive_verbs_count, all
     :param all_verbs_count: int - Общее количество глаголов.
     """
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n      СООТНОШЕНИЕ ПАССИВНЫХ ГЛАГОЛОВ КО ВСЕМ ГЛАГОЛАМ В ТЕКСТЕ" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "\n      СООТНОШЕНИЕ ПАССИВНЫХ ГЛАГОЛОВ КО ВСЕМ ГЛАГОЛАМ В ТЕКСТЕ" + Fore.RESET)
     wait_for_enter_to_analyze()
     table = Table()
     table.add_column("Показатель", justify="left", style="bold")

@@ -6,14 +6,21 @@ from colorama import Fore, Style
 from rich.console import Console
 from rich.table import Table
 
-from tools.core.data.pronouns import pronouns_analysis_list
+from tools.core.data.pronouns import (pers_possessive_pronouns_analysis_list,
+                                      reflexive_pronoun_list,
+                                      demonstrative_pronouns_list,
+                                      defining_pronouns_list,
+                                      relative_pronouns_list,
+                                      indefinite_pronouns_list,
+                                      negative_pronouns_list
+                                      )
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.lemmatizators import lemmatize_words
 
 console = Console()
 
 
-def compute_pronoun_frequencies(text, show_analysis=True):
+def compute_pronoun_frequencies(text, pronouns_list, show_analysis=True):
     """
     Вычисляет абсолютные и нормализованные частоты местоимений в тексте.
 
@@ -31,7 +38,7 @@ def compute_pronoun_frequencies(text, show_analysis=True):
         token_counts[token.normal_form] += 1
 
     # Подсчёт частот только местоимений
-    pronoun_counts = {pronoun: token_counts[pronoun] for pronoun in pronouns_analysis_list if pronoun in token_counts}
+    pronoun_counts = {pronoun: token_counts[pronoun] for pronoun in pronouns_list if pronoun in token_counts}
 
     total_tokens_count = sum(token_counts.values())
 
@@ -46,14 +53,30 @@ def compute_pronoun_frequencies(text, show_analysis=True):
 
     pronoun_freqs_json = json.dumps(rounded_pronoun_frequencies, ensure_ascii=False)
     pronoun_counts_json = json.dumps(dict(sorted_pronoun_counts), ensure_ascii=False)
+    pronouns_type = ''
+    if pronouns_list == pers_possessive_pronouns_analysis_list:
+        pronouns_type = 'pers_possessive'
+    elif pronouns_list == reflexive_pronoun_list:
+        pronouns_type = 'reflexive_pronoun'
+    elif pronouns_list == demonstrative_pronouns_list:
+        pronouns_type = 'demonstrative_pronouns'
+    elif pronouns_list == defining_pronouns_list:
+        pronouns_type = 'defining_pronouns'
+    elif pronouns_list == relative_pronouns_list:
+        pronouns_type = 'relative_pronouns'
+    elif pronouns_list == indefinite_pronouns_list:
+        pronouns_type = 'indefinite_pronouns'
+    elif pronouns_list == negative_pronouns_list:
+        pronouns_type = 'negative_pronouns'
+
     if show_analysis:
-        print_pronoun_frequencies(pronoun_freqs_json, pronoun_counts_json)
+        print_pronoun_frequencies(pronouns_type, pronoun_freqs_json, pronoun_counts_json)
         wait_for_enter_to_analyze()
 
     return pronoun_freqs_json, pronoun_counts_json
 
 
-def print_pronoun_frequencies(pronoun_freqs_json, pronoun_counts_json):
+def print_pronoun_frequencies(pronouns_type, pronoun_freqs_json, pronoun_counts_json):
     """
     Печатает абсолютные и нормализованные частоты местоимений .
 
@@ -62,7 +85,23 @@ def print_pronoun_frequencies(pronoun_freqs_json, pronoun_counts_json):
     """
     frequencies = json.loads(pronoun_freqs_json)
     counts = json.loads(pronoun_counts_json)
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                           ЧАСТОТЫ МЕСТОИМЕНИЙ" + Fore.RESET)
+    pro_name = ''
+    if pronouns_type == 'pers_possessive':
+        pro_name = 'ЛИЧНЫХ И ПРИТЯЖАТЕЛЬНЫХ'
+    elif pronouns_type == 'reflexive_pronoun':
+        pro_name = 'ВОЗВРАТНЫХ'
+    elif pronouns_type == 'demonstrative_pronouns':
+        pro_name = 'УКАЗАТЕЛЬНЫХ'
+    elif pronouns_type == 'defining_pronouns':
+        pro_name = 'ОПРЕДЕЛИТЕЛЬНЫХ'
+    elif pronouns_type == 'relative_pronouns':
+        pro_name = 'ОТНОСИТЕЛЬНЫХ'
+    elif pronouns_type == 'indefinite_pronouns':
+        pro_name = 'НЕОПРЕДЕЛЕННЫХ'
+    elif pronouns_type == 'negative_pronouns':
+        pro_name = 'ОТРИЦАТЕЛЬНЫХ'
+
+    print(Fore.GREEN + Style.BRIGHT + f"\n                  ЧАСТОТЫ {pro_name} МЕСТОИМЕНИЙ" + Fore.RESET)
 
     table = Table()
     table.add_column("Местоимение\n", justify="center", style="bold", min_width=20)
@@ -102,4 +141,4 @@ if __name__ == "__main__":
     оставаясь верной своей мечте — сделать мир лучше. Она знала, что впереди ещё много вызовов, но с каждым добрым 
     делом, с каждой спасённой жизнью, с каждой улыбкой на лице благодарного человека мир становился чуть светлее и 
     добрее."""
-    frequencies_json, a = compute_pronoun_frequencies(text)
+    frequencies_json, a = compute_pronoun_frequencies(text, demonstrative_pronouns_list)

@@ -31,8 +31,8 @@ def pos_ngrams(text, n_values=(1, 2, 3), show_analysis=True):
     if show_analysis:
         display_grammemes()
         wait_for_enter_to_analyze()
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                    ЧАСТОТЫ ЧАСТЕРЕЧНЫХ N-ГРАММОВ" + Fore.RESET)
-        print(Fore.LIGHTBLUE_EX + "По умолчанию в консоль выводятся n-граммы с абсолютной частотой >20." + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n                    ЧАСТОТЫ ЧАСТЕРЕЧНЫХ N-ГРАММОВ" + Fore.RESET)
+        print(Fore.LIGHTGREEN_EX + "По умолчанию в консоль выводятся n-граммы с абсолютной частотой >20." + Fore.RESET)
 
     text_processor = TextPreProcessor()
     text = text_processor.process_text(text)
@@ -93,7 +93,7 @@ def character_ngrams(text, n_values=(1, 2, 3), show_analysis=True):
     :return tuple: Строки JSON с абсолютными и нормализованными частотами униграммов, биграммов и триграммов.
     """
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                      ЧАСТОТЫ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n                      ЧАСТОТЫ БУКВЕННЫХ N-ГРАММОВ" + Fore.RESET)
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! N-граммы '<' и '>' используются для обозначания начала и конца \nслов соответственно.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
@@ -172,7 +172,7 @@ def display_ngrams(title, ngram_counts, normalized_counts, min_frequency=20):
     """
     ngram_counts = json.loads(ngram_counts)
     normalized_counts = json.loads(normalized_counts)
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"                          {title.upper()}" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + f"                          {title.upper()}" + Fore.RESET)
     wait_for_enter_to_analyze()
     table = Table()
 

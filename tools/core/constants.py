@@ -96,3 +96,14 @@ GRAMMEMES_MORPH_ANNOTATION_GRAM_CATEGORIES = {
         "Passive": "страдательный залог"
     }
 }
+
+NON_TRANSLATED_DB_NAME = 'auth_texts_corpus.db'
+HUMAN_TRANSLATED_DB_NAME = 'ht_texts_corpus'
+MACHINE_TRANSLATED_DB_NAME = 'mt_texts_corpus.db'
+
+AUTH_CORPUS_NAME = 'КОРПУС НЕПЕРЕВОДНЫХ ТЕКСТОВ'
+HT_CORPUS_NAME = 'КОРПУС РУЧНЫХ ПЕРЕВОДОВ'
+MT_CORPUS_NAME = 'КОРПУС МАШИННЫХ ПЕРЕВОДОВ'
+
+
+RETURN_TO_MENU = "Возврат в главное меню...\n"

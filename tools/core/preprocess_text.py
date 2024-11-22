@@ -22,17 +22,32 @@ def remove_links(text):
     # Удаление простых сносок на литературу, например, [1]
     text_without_simple_references = re.sub(r'\s*\[\d+\]\s*', '', text_without_links)
 
+    # Удаление ссылок с диапазоном через длинное тире, например, [16—18]
+    text_without_dash_references = re.sub(r'\[\d+—\d+\]', '', text_without_simple_references)
+
     # Удаление сложных сносок на литературу, например, [1, 2], [1-3], [1; 2]
     text_without_complex_references_square_br = re.sub(r'\s*\[\d+((,\s*\d+)|([–-]\d+)|;\s*\d+)+\]\s*', '',
-                                                       text_without_simple_references)
+                                                       text_without_dash_references)
 
     # Удаление сложных сносок на литературу, например, (1, 2), (1-3), (1; 2)
     text_without_complex_references_round_br = re.sub(r'\s*\(\d+((,\s*\d+)|([–-]\d+)|;\s*\d+)+\)\s*', '',
                                                       text_without_complex_references_square_br)
 
+    # Удаление ссылок типа [3, p. 177] или [3, с. 177]
+    text_without_page_references = re.sub(r'\[\d+,\s*[pPсС]\.\s*\d+\]', '', text_without_complex_references_round_br)
+
+    # Удаление всего содержимого в скобках, если в них присутствует p. или р.
+    text_without_p_references = re.sub(r'[\(\[][^)\]]*[pрPР]\.[^)\]]*[\)\]]', '', text_without_page_references)
+
+    # Удаление содержимого в угловых скобках только для случаев <...>, <... >, < ...>
+    text_without_specific_angle_brackets = re.sub(r'<\s*(\.\.\.|…)\s*>', '', text_without_p_references)
+
+    # Удаление любых ссылок, содержащих "Ibid" или "Там же"
+    text_without_ibid = re.sub(r'[\(\[][^)\]]*(Ibid|Там же)[^)\]]*[\)\]]', '', text_without_specific_angle_brackets)
+
     # Удаление ссылок, начинающихся на ( и содержащих год (четыре цифры) и оканчивающихся на )
     text_without_round_bracket_references = re.sub(r'\([^\)]*\b\d{4}\b[^\)]*\)', '',
-                                                   text_without_complex_references_round_br)
+                                                   text_without_ibid)
 
     # Удаление ссылок, начинающихся на [ и содержащих год (четыре цифры) и оканчивающихся на ]
     text_without_square_bracket_references = re.sub(r'\[[^\)]*\b\d{4}\b[^\)]*\]', '',
@@ -62,10 +77,14 @@ def remove_links(text):
 
     # Замена дефиса, окруженного пробелами, на длинное тире, окруженное пробелами
     text_without_hyphens = re.sub(r' \- ', ' — ', text_without_repeated_punct)
-    print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nУДАЛЕНИЕ ССЫЛОК ИЗ ТЕКСТА УСПЕШНО ЗАВЕРШЕНО" + Fore.RESET)
 
-    return text_without_hyphens
+    # Замена инициалов, стоящих без пробела, на разделённые пробелом (например, А.А. -> А. А.)
+    text_with_spaced_initials = re.sub(r'([A-Za-zА-Яа-я])\.([A-Za-zА-Яа-я])\.', r'\1. \2.', text_without_hyphens)
+
+    print(
+        Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nУДАЛЕНИЕ ССЫЛОК ИЗ ТЕКСТА УСПЕШНО ЗАВЕРШЕНО" + Fore.RESET)
+
+    return text_with_spaced_initials
 
 
 def show_sent_tokenization(sentences):
@@ -77,8 +96,9 @@ def show_sent_tokenization(sentences):
     for index, sent in enumerate(sentences, start=1):
         words = word_tokenize(sent)
         first_token = words[0] if words else ''
-        last_but_one_token = words[-2] if words else ''
-        last_token = words[-1] if words else ''
+        last_token = words[-1] if len(words) > 0 else ''
+        last_but_one_token = words[-2] if len(words) > 1 else ''
+
         print(
             Fore.LIGHTWHITE_EX + Style.BRIGHT + f" {index})" + Fore.LIGHTBLUE_EX + f" [{first_token}, {last_but_one_token} {last_token}]" + Fore.LIGHTWHITE_EX + Style.NORMAL + f" {sent}")
 
@@ -91,11 +111,17 @@ def adjust_text_length(text):
     :return str: Отредактированный текст с указанным количеством предложений.
     """
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "ВЫРАВНИВАНИЕ ТЕКСТА ПО ДЛИНЕ ЗАПУЩЕНО\n" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "ВЫРАВНИВАНИЕ ТЕКСТА ПО ДЛИНЕ ЗАПУЩЕНО\n" + Fore.RESET)
+    text_processor = TextPreProcessor()
+    text_spacing_fixed = text_processor.fix_spacing_for_mean_sent_len(text)
+    sentences = sent_tokenize_with_abbr(text_spacing_fixed)
+    current_sentence_count = len(sentences)
     while True:
         try:
+            print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"В тексте найдено {len(sentences)} предложений." + Fore.RESET)
+
             target_sentence_count = int(
-                input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите желаемое количество предложений: \n" + Fore.RESET))
+                input(Fore.GREEN + Style.BRIGHT + "Введите желаемое количество предложений: \n" + Fore.RESET))
             if target_sentence_count > 0:
                 break
             else:
@@ -103,10 +129,7 @@ def adjust_text_length(text):
         except ValueError:
             print(Fore.LIGHTRED_EX + "Пожалуйста, введите целое число.\n" + Fore.RESET)
 
-    text_processor = TextPreProcessor()
-    text_spacing_fixed = text_processor.fix_spacing_for_mean_sent_len(text)
-    sentences = sent_tokenize_with_abbr(text)
-    current_sentence_count = len(sentences)
+
     if current_sentence_count < target_sentence_count:
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + f"Введенный текст содержит {current_sentence_count} предложений(я), желаемая"
@@ -127,13 +150,13 @@ def adjust_text_length(text):
                                       " словом предложения и финальным знаком препинания соответственно." + Fore.RESET)
     wait_for_enter_to_analyze()
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nПожалуйста, внимательно просмотрите разбивку"
+        Fore.LIGHTRED_EX + Style.BRIGHT + "\nПожалуйста, внимательно просмотрите разбивку"
                                              " и удостоверьтесь в ее правильности:" + Fore.RESET)
     wait_for_enter_to_analyze()
     show_sent_tokenization(sentences)
     while True:
         response = input(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nТекст разбит на предложения правильно (y/n)?\n" + Fore.RESET).strip().lower()
+            Fore.LIGHTRED_EX + Style.BRIGHT + "\nТекст разбит на предложения правильно (y/n)?\n" + Fore.RESET).strip().lower()
         if response in ['y', 'n']:
             break
         else:
@@ -163,11 +186,11 @@ def adjust_text_length(text):
                                                     f" предложений, целевая длина: {target_sentence_count}." + Fore.RESET)
 
             action = input(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите действие:" + Fore.LIGHTWHITE_EX +
+                Fore.GREEN + Style.BRIGHT + "\nВыберите действие:" + Fore.BLACK +
                 Style.BRIGHT + "\n1) Удалить предложения случайным образом " +
-                Fore.LIGHTGREEN_EX + Style.BRIGHT + "(рекомендовано)" + Fore.LIGHTWHITE_EX
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + "(рекомендовано)" + Fore.BLACK
                 + Style.BRIGHT + "\n2) Выбрать предложения для удаления по индексу"
-                + Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите номер действия:\n" + Fore.RESET).strip()
+                + Fore.GREEN + Style.BRIGHT + "\nВведите номер действия:\n" + Fore.RESET).strip()
 
             if action == '1':
                 if target_sentence_count < current_sentence_count:
@@ -182,7 +205,7 @@ def adjust_text_length(text):
                         current_sentence_count = len(sentences)
                         remaining_to_remove = current_sentence_count - target_sentence_count
 
-                        indices_to_remove = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT +
+                        indices_to_remove = input(Fore.LIGHTGREEN_EX + Style.BRIGHT +
                                                   f"Введите номера предложений для удаления (в диапазоне 1-{current_sentence_count}), "
                                                   f"разделенные пробелами. Максимум можно удалить {remaining_to_remove} предложений:\n" + Fore.RESET).strip()
 
@@ -268,22 +291,22 @@ def process_text_from_file(file_path, init_dir):
 def main():
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                     ПРОЦЕСС ПОДГОТОВКИ ТЕКСТА К ДАЛЬНЕЙШЕМУ АНАЛИЗУ ЗАПУЩЕН" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "                     ПРОЦЕСС ПОДГОТОВКИ ТЕКСТА К ДАЛЬНЕЙШЕМУ АНАЛИЗУ ЗАПУЩЕН" + Fore.RESET)
     print(Fore.LIGHTWHITE_EX + "*" * 100)
 
     while True:
         mode = input(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
+            Fore.LIGHTGREEN_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
 
         if mode.lower().strip() == 'f':
             while True:
                 print(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
-                print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_texts/")
-                print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_texts/")
-                print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_texts/")
+                    Fore.GREEN + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                print(Fore.BLACK + "1. Директория с аутентичными текстами /auth_texts/")
+                print(Fore.BLACK + "2. Директория с машинными переводами /mt_texts/")
+                print(Fore.BLACK + "3. Директория с переводами, сделанными человеком /ht_texts/")
                 dir_choice = input(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
+                    Fore.GREEN + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
 
                 if dir_choice == '1':
                     directory = "auth_texts/"
@@ -295,7 +318,7 @@ def main():
                     print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nНеверный выбор. Попробуйте снова." + Fore.RESET)
                     continue
 
-                file_name = input(Fore.LIGHTYELLOW_EX + "Введите название файла в"
+                file_name = input(Fore.LIGHTGREEN_EX + "Введите название файла в"
                                                         " выбранной директории "
                                                         "(только файлы .txt): " + Fore.RESET).strip()
                 file_path = directory + file_name + '.txt'
@@ -309,12 +332,12 @@ def main():
 
         elif mode.lower().strip() == 't':
             while True:
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
-                print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "1. Аутентичный текст")
-                print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "2. Машинный перевод")
-                print(Fore.LIGHTWHITE_EX + Style.BRIGHT + "3. Перевод, сделанный человеком")
+                print(Fore.GREEN + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
+                print(Fore.BLACK + Style.BRIGHT + "1. Непереводной текст")
+                print(Fore.BLACK + Style.BRIGHT + "2. Машинный перевод")
+                print(Fore.BLACK + Style.BRIGHT + "3.Ручной перевод")
                 text_type_choice = input(
-                    Fore.LIGHTRED_EX + Style.BRIGHT + "Введите номер типа текста: " + Fore.RESET).strip()
+                    Fore.GREEN + Style.BRIGHT + "Введите номер типа текста: " + Fore.RESET).strip()
 
                 # Выбор места сохранения
                 if text_type_choice == '1':
@@ -334,7 +357,7 @@ def main():
                 # Формирование имени файла для сохранения
                 while True:
                     file_name = input(
-                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВведите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
+                        Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
 
                     if file_name:
                         break

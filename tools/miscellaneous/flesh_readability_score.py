@@ -48,7 +48,7 @@ def flesh_readability_index_for_rus(text, show_analysis=True):
     aver_syll_per_word, _ = calculate_syllable_ratio(text, False)
 
     # Рассчитываем индекс удобочитаемости по формуле Оборневой
-    flesh_idx = round(206.835 - 1.3 * aver_sent_len - 60.1 * aver_syll_per_word, 3)
+    flesh_idx = round(206.836 - 1.3 * aver_sent_len - 60.1 * aver_syll_per_word, 3)
     if show_analysis:
         display_readability_index(flesh_idx)
         wait_for_enter_to_analyze()
@@ -62,7 +62,7 @@ def display_readability_index(flesh_idx):
 
     :param flesh_idx: float - Индекс удобочитаемости текста.
     """
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                   ИНДЕКС УДОБОЧИТАЕМОСТИ" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + "\n                   ИНДЕКС УДОБОЧИТАЕМОСТИ" + Fore.RESET)
     table = Table()
     table.add_column("Показатель", style="bold", justify="center", min_width=30)
     table.add_column("Значение", justify="center", min_width=20)

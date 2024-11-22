@@ -5,7 +5,7 @@ from nltk.tokenize import word_tokenize
 from rich.console import Console
 from rich.table import Table
 
-from tools.core.data.pronouns import pronouns_analysis
+from tools.core.data.pronouns import pers_possessive_pronouns_analysis_list
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.explicitation.named_entities_extraction import extract_entities
 
@@ -28,14 +28,15 @@ def calculate_explicit_naming_ratio(text, show_analysis=True):
 
     tokens = word_tokenize(text.lower(), language="russian")
 
-    pronouns_count = sum(1 for token in tokens if morph.parse(token)[0].normal_form in pronouns_analysis)
+    pronouns_count = sum(1 for token in tokens if morph.parse(token)[0].normal_form in pers_possessive_pronouns_analysis_list)
 
     if entities_count > 0:
         ratio = round((pronouns_count / entities_count) * 100, 3)
     else:
         ratio = 0
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nОТНОШЕНИЕ ЛИЧНЫХ МЕСТОИМЕНИЙ К ИМЕНАМ СОБСТВЕННЫМ\n              (EXPLICIT NAMING)" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\nОТНОШЕНИЕ ЛИЧНЫХ МЕСТОИМЕНИЙ К ИМЕНАМ СОБСТВЕННЫМ\n              ("
+                                          "EXPLICIT NAMING)" + Fore.RESET)
 
         table = Table()
 
@@ -43,7 +44,7 @@ def calculate_explicit_naming_ratio(text, show_analysis=True):
         table.add_column("Значение", justify="center", width=10)
 
         table.add_row("Отношение (%)", f"{ratio:.2f}%")
-        table.add_row("Количество личных местоимений", str(pronouns_count))
+        table.add_row("Количество личных/притяжательных местоимений", str(pronouns_count))
         table.add_row("Количество имен собственных", str(entities_count))
 
         console.print(table)

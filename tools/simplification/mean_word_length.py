@@ -35,7 +35,7 @@ def mean_word_length_char(text, show_analysis=True):
     mean_word_length_in_chars = round(total_chars_num / len(tokens), 3)
 
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n         СРЕДНЯЯ ДЛИНА СЛОВ В СИМВОЛАХ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n         СРЕДНЯЯ ДЛИНА СЛОВ В СИМВОЛАХ" + Fore.RESET)
         table = Table()
         table.add_column("Показатель", style="bold", justify="left", no_wrap=True, min_width=30)
         table.add_column("Значение", justify="center", min_width=10)
@@ -97,7 +97,7 @@ def print_syllable_ratio_table(syllable_ratio, syllables_count):
        :param syllable_ratio: Соотношение слогов к словам.
        :param syllables_count: Общее количество слогов.
        """
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n        СРЕДНЯЯ ДЛИНА СЛОВ В СЛОГАХ" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + "\n        СРЕДНЯЯ ДЛИНА СЛОВ В СЛОГАХ" + Fore.RESET)
 
     table = Table()
     table.add_column("Показатель", style="bold", justify="left", no_wrap=True, min_width=30)

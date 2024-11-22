@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
 import nltk
+
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
@@ -14,29 +15,45 @@ import json
 import os
 import re
 
-from natasha import (Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger,
-                     NewsSyntaxParser, Doc)
+from natasha import (Segmenter, MorphVocab, NewsEmbedding,
+                     NewsMorphTagger, NewsSyntaxParser, Doc)
 import pymorphy2
 from colorama import Fore, Style, init
 from rich.console import Console
 from rich.table import Table
 
 from tools.core import preprocess_text
+from tools.core.constants import (NON_TRANSLATED_DB_NAME,
+                                  MACHINE_TRANSLATED_DB_NAME,
+                                  HUMAN_TRANSLATED_DB_NAME, RETURN_TO_MENU)
+from tools.core.tokens_counter import count_tokens
 from tools.core.custom_punkt_tokenizer import sent_tokenize_with_abbr
 from tools.work_with_db import SaveToDatabase
 from tools.core.utils import (wait_for_enter_to_analyze,
                               display_morphological_annotation,
                               format_morphological_features,
-                              wait_for_enter_to_choose_opt)
+                              wait_for_enter_to_choose_opt,
+                              check_db_exists, choose_db)
 from tools.core.validators import validate_gender, validate_years
+
+from tools.core.data.pronouns import (pers_possessive_pronouns_analysis_list,
+                                      reflexive_pronoun_list,
+                                      demonstrative_pronouns_list,
+                                      defining_pronouns_list,
+                                      relative_pronouns_list,
+                                      indefinite_pronouns_list,
+                                      negative_pronouns_list)
 
 # Импорты для "Simplification_features"
 from tools.simplification.lexical_density import calculate_lexical_density
 from tools.simplification.lexical_variety import lexical_variety
-from tools.simplification.mean_word_length import mean_word_length_char, calculate_syllable_ratio
-from tools.simplification.mean_sent_length import mean_sentence_length_in_tokens, mean_sentence_length_in_chars
+from tools.simplification.mean_word_length import (mean_word_length_char,
+                                                   calculate_syllable_ratio)
+from tools.simplification.mean_sent_length import (mean_sentence_length_in_tokens,
+                                                   mean_sentence_length_in_chars)
 from tools.simplification.mean_word_rank import calculate_mean_word_rank
-from tools.simplification.most_frequent_words import find_n_most_frequent_words
+from tools.simplification.most_frequent_words import (find_n_most_frequent_words,
+                                                      count_types_in_text)
 
 # Импорты для "Normalisation_features"
 from tools.normalisation.repetition import calculate_repetition
@@ -51,7 +68,8 @@ from tools.explicitation.sci_dm_analysis import sci_dm_search
 # Импорты для "Interference_features"
 from tools.interference.n_grams_analyzer import pos_ngrams, character_ngrams
 from tools.interference.positional_token_freq import calculate_position_frequencies
-from tools.interference.positional_tokens_contexts_by_sent import extract_positions, print_positions
+from tools.interference.positional_tokens_contexts_by_sent import (extract_positions,
+                                                                   print_positions)
 from tools.interference.contextual_func_words import contextual_function_words_in_trigrams
 
 # Импорты для "Miscellaneous_features"
@@ -59,14 +77,14 @@ from tools.miscellaneous.func_words_freqs import compute_function_word_frequenci
 from tools.miscellaneous.pronouns_freq import compute_pronoun_frequencies
 from tools.miscellaneous.punct_analysis import analyze_punctuation
 from tools.miscellaneous.passive_to_all_verbs_ratio import calculate_passive_verbs_ratio
-from tools.miscellaneous.flesh_readability_index import flesh_readability_index_for_rus
+from tools.miscellaneous.flesh_readability_score import flesh_readability_index_for_rus
 
 init(autoreset=True)
 console = Console()
 
 
 class CorpusText:
-    def __init__(self, db, text=None):
+    def __init__(self, db=None, text=None):
         self.db = db
         self.text = text
         self.title = ""
@@ -98,7 +116,9 @@ class CorpusText:
         if show_analysis:
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTRED_EX + Style.BRIGHT + "                               ИНДИКАТОРЫ УНИВЕРСАЛИИ" + Fore.LIGHTYELLOW_EX + Style.BRIGHT + " SIMPLIFICATION")
+                Fore.GREEN + Style.BRIGHT +
+                "                               ИНДИКАТОРЫ ХАРАКТЕРИСТИКИ"
+                + Fore.LIGHTGREEN_EX + Style.BRIGHT + " SIMPLIFICATION")
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             wait_for_enter_to_analyze()
         lexical_density = calculate_lexical_density(self.text, show_analysis)  # OK
@@ -113,12 +133,16 @@ class CorpusText:
         chars_mean_sent_length = mean_sentence_length_in_chars(self.text, show_analysis)  # OK
         mean_word_rank_1, mean_word_rank_2, = calculate_mean_word_rank(self.text, show_analysis)  # OK
         most_freq_words = find_n_most_frequent_words(self.text, show_analysis=show_analysis)  # OK
+        types_counts = count_types_in_text(self.text)
+        all_tokens_count, alpha_tokens_count, all_punct_tokens_count = count_tokens(self.text)
 
         if show_analysis:
             # Анализ Normalisation_features
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTRED_EX + Style.BRIGHT + "                               ИНДИКАТОРЫ УНИВЕРСАЛИИ" + Fore.LIGHTYELLOW_EX + Style.BRIGHT + " NORMALISATION")
+                Fore.GREEN + Style.BRIGHT +
+                "                               ИНДИКАТОРЫ ХАРАКТЕРИСТИКИ"
+                + Fore.LIGHTGREEN_EX + Style.BRIGHT + " NORMALISATION")
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             wait_for_enter_to_analyze()
         repetition, repeated_content_words_count, repeated_content_words, total_word_tokens = calculate_repetition(
@@ -128,7 +152,9 @@ class CorpusText:
             # Анализ Explicitation_features
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTRED_EX + Style.BRIGHT + "                               ИНДИКАТОРЫ УНИВЕРСАЛИИ" + Fore.LIGHTYELLOW_EX + Style.BRIGHT + " EXPLICITATION")
+                Fore.GREEN + Style.BRIGHT +
+                "                               ИНДИКАТОРЫ ХАРАКТЕРИСТИКИ" +
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + " EXPLICITATION")
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             wait_for_enter_to_analyze()
         explicit_naming_ratio = calculate_explicit_naming_ratio(self.text, show_analysis)  # OK
@@ -137,7 +163,7 @@ class CorpusText:
             self.text, show_analysis)  # OK
         named_entities, named_entities_count = extract_entities(self.text, show_analysis)  # OK
 
-        (sci_markers_total_count, found_sci_dms, markers_counts,
+        (total_tokens_with_dms, sci_markers_total_count, found_sci_dms, markers_counts,
          topic_intro_dm_count, topic_intro_dm_in_ord, topic_intro_dm_freq,
          info_sequence_count, info_sequence_in_ord, info_sequence_freq,
          illustration_dm_count, illustration_dm_in_ord, illustration_dm_freq,
@@ -147,10 +173,14 @@ class CorpusText:
          info_explanation_or_repetition_count, info_explanation_or_repetition_in_ord,
          info_explanation_or_repetition_freq, contrast_dm_count, contrast_dm_in_ord,
          contrast_dm_freq, examples_introduction_dm_count, examples_introduction_dm_in_ord,
-         examples_introduction_dm_freq, author_opinion_count, author_opinion_in_ord,
-         author_opinion_freq, categorical_attitude_dm_count, categorical_attitude_dm_in_ord,
-         categorical_attitude_dm_freq, less_categorical_attitude_dm_count,
-         less_categorical_attitude_dm_in_ord, less_categorical_attitude_dm_freq,
+         examples_introduction_dm_freq,
+         author_opinion_count, author_opinion_in_ord, author_opinion_freq,
+         author_attitude_count, author_attitude_in_ord, author_attitude_freq,
+         high_certainty_modal_words_count, high_certainty_modal_words_in_ord,
+         high_certainty_modal_words_freq,
+         moderate_certainty_modal_words_count, moderate_certainty_modal_words_in_ord,
+         moderate_certainty_modal_words_freq,
+         uncertainty_modal_words_count, uncertainty_modal_words_in_ord, uncertainty_modal_words_freq,
          call_to_action_dm_count, call_to_action_dm_in_ord, call_to_action_dm_freq,
          joint_action_count, joint_action_in_ord, joint_action_freq, putting_emphasis_dm_count,
          putting_emphasis_dm_in_ord, putting_emphasis_dm_freq, refer_to_background_knowledge_count,
@@ -161,7 +191,9 @@ class CorpusText:
             # Анализ Interference_features
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTRED_EX + Style.BRIGHT + "                               ИНДИКАТОРЫ УНИВЕРСАЛИИ" + Fore.LIGHTYELLOW_EX + Style.BRIGHT + " INTERFERENCE")
+                Fore.GREEN + Style.BRIGHT +
+                "                               ИНДИКАТОРЫ ХАРАКТЕРИСТИКИ" +
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + " INTERFERENCE")
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             wait_for_enter_to_analyze()
 
@@ -179,9 +211,12 @@ class CorpusText:
         token_positions_in_sent = extract_positions(self.text, show_analysis=False)  # OK
         if show_analysis:
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ" + Fore.RESET)
+                Fore.GREEN + Style.BRIGHT +
+                "\n             ТОКЕНЫ И ИХ ЧАСТИ РЕЧИ НА РАЗНЫХ ПОЗИЦИЯХ В ПРЕДЛОЖЕНИИ"
+                + Fore.RESET)
             print(
-                Fore.LIGHTGREEN_EX + Style.BRIGHT + "* Выводятся контексты предложений, длиннее 5 токенов." + Fore.RESET)
+                Fore.LIGHTGREEN_EX + Style.BRIGHT +
+                "* Выводятся контексты предложений, длиннее 5 токенов." + Fore.RESET)
             wait_for_enter_to_analyze()
             print_positions(token_positions_in_sent)
 
@@ -193,13 +228,34 @@ class CorpusText:
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
 
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                     ОСТАЛЬНЫЕ" + Fore.LIGHTRED_EX + Style.BRIGHT + " ИНДИКАТОРЫ")
+                Fore.GREEN + Style.BRIGHT +
+                "                                     ОСТАЛЬНЫЕ" +
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + " ИНДИКАТОРЫ")
             print(Fore.LIGHTWHITE_EX + "*" * 100)
             wait_for_enter_to_analyze()
 
         func_words_freq, func_words_counts = compute_function_word_frequencies(self.text, show_analysis)  # OK
-
-        pronoun_frequencies, pronoun_counts = compute_pronoun_frequencies(self.text, show_analysis)  # OK
+        pers_possessive_pronouns_frequencies, pers_possessive_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                                            pers_possessive_pronouns_analysis_list,
+                                                                                                            show_analysis)
+        reflexive_pronoun_frequencies, reflexive_pronoun_counts = compute_pronoun_frequencies(self.text,
+                                                                                              reflexive_pronoun_list,
+                                                                                              show_analysis)
+        demonstrative_pronouns_frequencies, demonstrative_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                                        demonstrative_pronouns_list,
+                                                                                                        show_analysis)
+        defining_pronouns_frequencies, defining_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                              defining_pronouns_list,
+                                                                                              show_analysis)
+        relative_pronouns_frequencies, relative_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                              relative_pronouns_list,
+                                                                                              show_analysis)
+        indefinite_pronouns_frequencies, indefinite_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                                  indefinite_pronouns_list,
+                                                                                                  show_analysis)
+        negative_pronouns_frequencies, negative_pronouns_counts = compute_pronoun_frequencies(self.text,
+                                                                                              negative_pronouns_list,
+                                                                                              show_analysis)
 
         punct_marks_normalized_frequency, punct_marks_to_all_punct_frequency, punctuation_counts = analyze_punctuation(
             self.text,
@@ -216,7 +272,8 @@ class CorpusText:
                 lexical_density, ttr_lex_variety,
                 log_ttr_lex_variety, modified_lex_variety, mean_word_length,
                 syllable_ratio, total_syllables_count, tokens_mean_sent_length,
-                chars_mean_sent_length, mean_word_rank_1, mean_word_rank_2, most_freq_words
+                chars_mean_sent_length, mean_word_rank_1, mean_word_rank_2,
+                most_freq_words, types_counts, all_tokens_count, alpha_tokens_count, all_punct_tokens_count
             )
 
             db_saver.insert_normalisation_features(
@@ -227,7 +284,8 @@ class CorpusText:
             db_saver.insert_explicitation_features(
                 explicit_naming_ratio, single_naming, mean_multiple_naming, single_entities, single_entities_count,
                 multiple_entities, multiple_entities_count,
-                named_entities, named_entities_count, sci_markers_total_count, found_sci_dms, markers_counts,
+                named_entities, named_entities_count,
+                total_tokens_with_dms, sci_markers_total_count, found_sci_dms, markers_counts,
                 topic_intro_dm_count, topic_intro_dm_in_ord, topic_intro_dm_freq,
                 info_sequence_count, info_sequence_in_ord, info_sequence_freq,
                 illustration_dm_count, illustration_dm_in_ord, illustration_dm_freq,
@@ -238,9 +296,13 @@ class CorpusText:
                 info_explanation_or_repetition_freq, contrast_dm_count, contrast_dm_in_ord,
                 contrast_dm_freq, examples_introduction_dm_count, examples_introduction_dm_in_ord,
                 examples_introduction_dm_freq, author_opinion_count, author_opinion_in_ord,
-                author_opinion_freq, categorical_attitude_dm_count, categorical_attitude_dm_in_ord,
-                categorical_attitude_dm_freq, less_categorical_attitude_dm_count,
-                less_categorical_attitude_dm_in_ord, less_categorical_attitude_dm_freq,
+                author_opinion_freq,
+                author_attitude_count, author_attitude_in_ord, author_attitude_freq,
+                high_certainty_modal_words_count, high_certainty_modal_words_in_ord,
+                high_certainty_modal_words_freq,
+                moderate_certainty_modal_words_count, moderate_certainty_modal_words_in_ord,
+                moderate_certainty_modal_words_freq,
+                uncertainty_modal_words_count, uncertainty_modal_words_in_ord, uncertainty_modal_words_freq,
                 call_to_action_dm_count, call_to_action_dm_in_ord, call_to_action_dm_freq,
                 joint_action_count, joint_action_in_ord, joint_action_freq, putting_emphasis_dm_count,
                 putting_emphasis_dm_in_ord, putting_emphasis_dm_freq, refer_to_background_knowledge_count,
@@ -251,18 +313,28 @@ class CorpusText:
                 pos_unigrams_counts, pos_unigrams_freq, pos_bigrams_counts,
                 pos_bigrams_freq, pos_trigrams_counts, pos_trigrams_freq,
                 char_unigram_counts, char_unigram_freq, char_bigram_counts,
-                char_bigram_freq, char_trigram_counts, char_trigram_freq, token_positions_normalized_frequencies,
-                token_positions_counts, token_positions_in_sent, func_w_trigrams_freqs, func_w_trigram_with_pos_counts,
-                func_w_full_contexts
+                char_bigram_freq, char_trigram_counts, char_trigram_freq,
+                token_positions_normalized_frequencies, token_positions_counts,
+                token_positions_in_sent, func_w_trigrams_freqs,
+                func_w_trigram_with_pos_counts, func_w_full_contexts
             )
             db_saver.insert_miscellaneous_features(
-                func_words_freq, func_words_counts, pronoun_frequencies, pronoun_counts,
+                func_words_freq, func_words_counts,
+                pers_possessive_pronouns_frequencies, pers_possessive_pronouns_counts,
+                reflexive_pronoun_frequencies, reflexive_pronoun_counts,
+                demonstrative_pronouns_frequencies, demonstrative_pronouns_counts,
+                defining_pronouns_frequencies, defining_pronouns_counts,
+                relative_pronouns_frequencies, relative_pronouns_counts,
+                indefinite_pronouns_frequencies, indefinite_pronouns_counts,
+                negative_pronouns_frequencies, negative_pronouns_counts,
                 punct_marks_normalized_frequency,
-                punct_marks_to_all_punct_frequency, punctuation_counts, passive_to_all_v_ratio, passive_verbs,
-                passive_verbs_count, all_verbs, all_verbs_count, readability_index
+                punct_marks_to_all_punct_frequency, punctuation_counts,
+                passive_to_all_v_ratio, passive_verbs, passive_verbs_count,
+                all_verbs, all_verbs_count, readability_index
             )
 
-    def save_text_passport(self, text, title, subject_area, keywords, publication_year, published_in,
+    def save_text_passport(self, text, title, subject_area, keywords,
+                           publication_year, published_in,
                            authors, author_gender, author_birth_year):
         # Использование контекстного менеджера для работы с базой данных
         with SaveToDatabase(self.db) as db_saver:
@@ -273,7 +345,7 @@ class CorpusText:
 
     def create_text_passport(self):
         """Метод для ввода информации о паспорте текста и установки соответствующих атрибутов."""
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nСОЗДАНИЕ ПАСПОРТА ТЕКСТА")
+        print(Fore.GREEN + Style.BRIGHT + "\nСОЗДАНИЕ ПАСПОРТА ТЕКСТА")
         self.text = self.text
         # Обязательные поля
         self.title = input("Введите название статьи (обязательно): ").strip()
@@ -309,11 +381,11 @@ class CorpusText:
             except ValueError as e:
                 print(Fore.LIGHTRED_EX + str(e) + Fore.RESET)
 
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "ПАСПОРТ ТЕКСТА УСПЕШНО СОЗДАН!")
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "ПАСПОРТ ТЕКСТА УСПЕШНО СОЗДАН!")
 
     def display_text_passport(self):
         """Метод для отображения паспорта текста в виде таблицы."""
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                      ПАСПОРТ ТЕКСТА")
+        print(Fore.GREEN + Style.BRIGHT + "\n                      ПАСПОРТ ТЕКСТА")
         table = Table()
         table.add_column("Поле", style="bold", min_width=20)
         table.add_column("Значение")
@@ -450,7 +522,7 @@ class CorpusText:
         if self.syntactic_analysis_result:
             print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+                Fore.GREEN + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
             print("" + Fore.LIGHTWHITE_EX + "*" * 100)
             print(Fore.LIGHTGREEN_EX + Style.BRIGHT +
                   "В  программе используется разметка синтаксических зависимостей в формате (UD) Universal "
@@ -466,7 +538,7 @@ class CorpusText:
                 end = min(start + batch_size, total_sentences)
 
                 for i in range(start, end):
-                    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
+                    print(Fore.GREEN + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
                     self.syntactic_analysis_result.sents[i].syntax.print()
                     print("\n" + Fore.LIGHTBLUE_EX + Style.BRIGHT + "*" * 150)
 
@@ -477,7 +549,7 @@ class CorpusText:
 
                 if start < total_sentences:
                     user_input = input(
-                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
+                        Fore.LIGHTGREEN_EX + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
                                                              " \n" + Fore.RESET).strip().lower()
 
                     while user_input not in ['y', 'n']:
@@ -503,7 +575,7 @@ class CorpusText:
                 show_analysis = True
                 break
             elif user_display_choice.lower() == 'n':
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nПОЖАЛУЙСТА, ДОЖДИТЕСЬ ОКОНЧАНИЯ АНАЛИЗА.")
+                print(Fore.GREEN + Style.BRIGHT + "\nПОЖАЛУЙСТА, ДОЖДИТЕСЬ ОКОНЧАНИЯ АНАЛИЗА.")
                 show_analysis = False
                 break
             else:
@@ -513,7 +585,8 @@ class CorpusText:
 
         self.analyze_and_save(show_analysis)  # Выполняем анализ и сохраняем результаты
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nАНАЛИЗ ИНДИКАТОРОВ ФЕНОМЕНА" + Fore.LIGHTRED_EX + Style.BRIGHT + " TRANSLATIONESE " + Fore.LIGHTYELLOW_EX + Style.BRIGHT + "УСПЕШНО ЗАВЕРШЕН!")
+            Fore.GREEN + Style.BRIGHT + "\nАНАЛИЗ ИНДИКАТОРОВ ФЕНОМЕНА" + Fore.LIGHTGREEN_EX + Style.BRIGHT +
+            " TRANSLATIONESE " + Fore.GREEN + Style.BRIGHT + "УСПЕШНО ЗАВЕРШЕН!")
         print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "РЕЗУЛЬТАТЫ АНАЛИЗА СОХРАНЕНЫ В БАЗУ ДАННЫХ.\n" + Fore.RESET)
         wait_for_enter_to_analyze()
         self.save_text_passport(
@@ -522,7 +595,7 @@ class CorpusText:
 
         morph_ann = self.get_morphological_annotation()
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nМОРФОЛОГИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ")
+            Fore.GREEN + Style.BRIGHT + "\nМОРФОЛОГИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ")
         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
         while True:
             display_morph_ann = input(
@@ -537,7 +610,7 @@ class CorpusText:
                 continue
         self.get_syntactic_annotation()
 
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nСИНТАКСИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ.")
+        print(Fore.GREEN + Style.BRIGHT + "\nСИНТАКСИЧЕСКАЯ РАЗМЕТКА СОЗДАНА И СОХРАНЕНА В БАЗУ ДАННЫХ.")
         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Разметка может занять много места на экране.")
         while True:
             display_synt_ann = input(
@@ -551,46 +624,41 @@ class CorpusText:
                 print(Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n).")
                 continue
 
-    def display_corpus_info(self):
+    def display_corpus_info(self, choice=None):
         """
         Отображает общую информацию о корпусе текстов
         """
-        with SaveToDatabase(self.db) as db_corpus_info:
-            db_corpus_info.display_corpus_info()
+        if not choice:
+            with SaveToDatabase(self.db) as db_corpus_info:
+                db_corpus_info.display_corpus_info()
+        else:
+            with SaveToDatabase() as db_corpora_comparison:
+                db_corpora_comparison.display_corpus_info(choice)
 
 
 def user_interface():
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + '\nПРОГРАММА ДЛЯ АНАЛИЗА ФЕНОМЕНА' + Fore.LIGHTRED_EX + Style.BRIGHT + ' TRANSLATIONESE' + Fore.LIGHTYELLOW_EX + Style.BRIGHT + ' ЗАПУЩЕНА\n' + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + '\nАНАЛИЗТОР ФЕНОМЕНА' + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' TRANSLATIONESE' + Fore.GREEN + Style.BRIGHT + ' ЗАПУЩЕН\n' + Fore.RESET)
     while True:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Выберите действие: ")
-        print(Fore.LIGHTWHITE_EX + "1. Проанализировать новый текст")
-        print(Fore.LIGHTWHITE_EX + "2. Отобразить информацию о выбранном тексте в корпусе")
-        print(Fore.LIGHTWHITE_EX + "3. Отобразить информацию о всем корпусе")
-        print(Fore.LIGHTWHITE_EX + "4. Подготовить текст к анализу (удаление ссылок и выравнивание текста по длине)")
-        print(Fore.WHITE + "5. Выйти из программы")
+        print(Fore.GREEN + Style.BRIGHT + "Выберите действие: ")
+        print(Fore.GREEN + Style.BRIGHT + "1." + Style.NORMAL + Fore.BLACK + " Проанализировать новый текст")
+        print(
+            Fore.GREEN + Style.BRIGHT + "2." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном тексте в корпусе")
+        print(
+            Fore.GREEN + Style.BRIGHT + "3." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном корпусе")
+        # print(
+        #     Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Отобразить средние показатели по всем корпусам")
+        print(
+            Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Подготовить текст к анализу (удаление ссылок, выравнивание текста по длине)")
+        print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "5." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти из программы")
 
-        choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер действия: \n")
+        choice = input(Fore.GREEN + Style.BRIGHT + "Введите номер действия: \n")
 
         if choice == "1":
-            while True:
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите базу данных, в которую хотите"
-                                                           " сохранить результат анализа текста:")
-                print(Fore.LIGHTWHITE_EX + "1. База аутентичных текстов")
-                print(Fore.LIGHTWHITE_EX + "2. База машинных переводов")
-                print(Fore.LIGHTWHITE_EX + "3. База переводов, выполненных человеком")
-                db_choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Выберите номер базы данных:\n")
-                if db_choice == "1":
-                    db = "auth_texts_corpus.db"
-                    break
-                elif db_choice == "2":
-                    db = "mt_texts_corpus.db"
-                    break
-                elif db_choice == "3":
-                    db = "ht_texts_corpus.db"
-                    break
-                else:
-                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
+            db = choose_db()
+            if not db:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
+                continue
 
             text_to_analyse = text_input_for_analysis()
             print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\nТекст будет сохранен в базу данных: {db}.")
@@ -599,47 +667,47 @@ def user_interface():
             wait_for_enter_to_choose_opt()
 
         elif choice == "2":
-            while True:
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите базу данных с текстами:")
-                print(Fore.LIGHTWHITE_EX + "1. База аутентичных текстов")
-                print(Fore.LIGHTWHITE_EX + "2. База машинных переводов")
-                print(Fore.LIGHTWHITE_EX + "3. База переводов, выполненных человеком")
-                db_choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Выберите номер базы данных:\n")
-                if db_choice == "1":
-                    db = "auth_texts_corpus.db"
-                    break
-                elif db_choice == "2":
-                    db = "mt_texts_corpus.db"
-                    break
-                elif db_choice == "3":
-                    db = "ht_texts_corpus.db"
-                    break
-                else:
-                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
-
+            db = choose_db()
+            if not db:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
+                continue
             corpus = CorpusText(db=db)
             corpus.show_texts()
 
         elif choice == "3":
-            while True:
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите базу данных с текстами:")
-                print(Fore.LIGHTWHITE_EX + "1. База аутентичных текстов")
-                print(Fore.LIGHTWHITE_EX + "2. База машинных переводов")
-                print(Fore.LIGHTWHITE_EX + "3. База переводов, выполненных человеком")
-                db_choice = input(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер базы данных:\n")
-                if db_choice == "1":
-                    db = "auth_texts_corpus.db"
-                    break
-                elif db_choice == "2":
-                    db = "mt_texts_corpus.db"
-                    break
-                elif db_choice == "3":
-                    db = "ht_texts_corpus.db"
-                    break
-                else:
-                    print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
+            db = choose_db()
+            if not db:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
+                continue
             corpus = CorpusText(db=db)
             corpus.display_corpus_info()
+        # elif choice == "4":
+        #     corpus = CorpusText()
+        #     if (
+        #             check_db_exists(NON_TRANSLATED_DB_NAME)
+        #             and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+        #     ):
+        #         corpus.display_corpus_info(choice='all')
+        #
+        #     elif (
+        #             check_db_exists(NON_TRANSLATED_DB_NAME)
+        #             and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+        #     ):
+        #         corpus.display_corpus_info(choice='auth_mt')
+        #     elif (
+        #             check_db_exists(NON_TRANSLATED_DB_NAME)
+        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+        #     ):
+        #         corpus.display_corpus_info(choice='auth_ht')
+        #     elif (
+        #             check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+        #     ):
+        #         corpus.display_corpus_info(choice='mt_ht')
+        #
+        #     else:
+        #         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Создайте минимум два корпуса текстов, чтобы сравнить.")
 
         elif choice == "4":
             preprocess_text.main()
@@ -648,7 +716,6 @@ def user_interface():
             exit()
         else:
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.\n")
-
 
 
 def process_text_from_file(file_path):
@@ -661,23 +728,24 @@ def process_text_from_file(file_path):
 def text_input_for_analysis():
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                     ВВОД ТЕКСТА ДЛЯ ПОСЛЕДУЮЩЕГО АНАЛИЗА" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "                     ВВОД ТЕКСТА ДЛЯ ПОСЛЕДУЮЩЕГО АНАЛИЗА" + Fore.RESET)
     print(Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Анализируемый текст уже должен быть предобработан и готов для последующего анализа." + Fore.RESET)
+        Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Текст должен быть заранее предобработан и готов для "
+                                          "последующего анализа." + Fore.RESET)
 
     while True:
         mode = input(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
+            Fore.GREEN + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
         if mode.lower().strip() == 'f':
             while True:
                 print(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
-                print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_ready/")
-                print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_ready/")
-                print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_ready/")
+                    Fore.GREEN + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                print(Fore.BLACK + "1. Директория с аутентичными текстами /auth_ready/")
+                print(Fore.BLACK + "2. Директория с машинными переводами /mt_ready/")
+                print(Fore.BLACK + "3. Директория с переводами, сделанными человеком /ht_ready/")
                 dir_choice = input(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
+                    Fore.GREEN + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
 
                 if dir_choice == '1':
                     directory = "auth_ready/"
@@ -689,7 +757,7 @@ def text_input_for_analysis():
                     print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nНеверный выбор. Попробуйте снова." + Fore.RESET)
                     continue
 
-                file_name = input(Fore.LIGHTYELLOW_EX + "Введите название файла в"
+                file_name = input(Fore.GREEN + "Введите название файла в"
                                                         " выбранной директории "
                                                         "(только файлы .txt): " + Fore.RESET).strip()
                 file_path = directory + file_name + '.txt'
@@ -701,10 +769,10 @@ def text_input_for_analysis():
                         Fore.LIGHTRED_EX + Style.BRIGHT + "Файл не найден. Проверьте путь и попробуйте снова." + Fore.RESET)
                 continue
         elif mode.lower().strip() == 't':
-            print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода с красной строки"
-                                                      " напечатайте 'r' и нажмите 'Enter').")
+            print(Fore.GREEN + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода"
+                                                      " напечатайте 'r' с красной строки и нажмите 'Enter').")
             print(
-                Fore.LIGHTRED_EX + "Если хотите вернуться в главное меню, с красной строки напечатайте 'x' и нажмите 'Enter'.")
+                Fore.RED + Style.BRIGHT + "Для возврата в главное меню напечатайте 'x' с красной строки и нажмите 'Enter'.")
             text_lines = []
             while True:
                 line = input()
@@ -723,7 +791,6 @@ def text_input_for_analysis():
                 print(Fore.LIGHTRED_EX + Style.BRIGHT + "Текст не был введен. Попробуйте снова.\n")
                 continue
             return input_text
-
 
 
 user_interface()

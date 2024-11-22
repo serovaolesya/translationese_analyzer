@@ -30,8 +30,9 @@ def single_naming_frequency(text, show_analysis=True):
 
     single_entities_frequency = round(single_entities_count / entities_count * 100, 3) if entities_count > 0 else 0.0
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nОТНОШЕНИЕ ОДНОТОКЕННЫХ ИМЕНОВАННЫХ СУЩНОСТЕЙ КО ВСЕМ ИМЕНОВАННЫМ СУЩНОСТЯМ "
-                                           "\n                           (SINGLE NAMING)" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\nОТНОШЕНИЕ ОДНОТОКЕННЫХ ИМЕНОВАННЫХ СУЩНОСТЕЙ КО ВСЕМ "
+                                                   "ИМЕНОВАННЫМ СУЩНОСТЯМ"
+                                                   "\n                           (SINGLE NAMING)" + Fore.RESET)
         table = Table()
 
         table.add_column("Параметр", style="bold")

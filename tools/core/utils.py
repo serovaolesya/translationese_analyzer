@@ -1,5 +1,6 @@
-from colorama import Fore, Style
+import os
 
+from colorama import Fore, Style
 from natasha import (Segmenter,
                      MorphVocab,
 
@@ -18,7 +19,7 @@ from rich.console import Console
 from rich.table import Table
 
 from tools.core.constants import GRAMMEMES_MORPH_ANNOTATION_GRAM_CATEGORIES, GRAMMEMES_NGRAMS, \
-    GRAMMEMES_MORPH_ANNOTATION
+    GRAMMEMES_MORPH_ANNOTATION, NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME
 
 console = Console()
 
@@ -51,7 +52,7 @@ def display_grammemes(for_n_grams=True):
     """
     if for_n_grams:
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ ЧАСТЕРЕЧНЫХ N-ГРАММОВ С ИСПОЛЬЗОВАНИЕМ PYMORPHY" + Fore.RESET)
+            Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nДАЛЕЕ БУДЕТ ПОКАЗАН АНАЛИЗ ЧАСТЕРЕЧНЫХ N-ГРАММОВ С ИСПОЛЬЗОВАНИЕМ PYMORPHY" + Fore.RESET)
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + "\nВНИМАТЕЛЬНО ПОСМОТРИТЕ НА ОБОЗНАЧЕНИЯ ЧАСТЕЙ РЕЧИ ПЕРЕД ТЕМ, КАК ПРОДОЛЖИТЬ" + Fore.RESET)
     else:
@@ -151,7 +152,7 @@ def display_morphological_annotation(sentences_info):
     """
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "                                   МОРФОЛОГИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
     print("" + Fore.LIGHTWHITE_EX + "*" * 100)
 
     def show_annot_info():
@@ -191,7 +192,7 @@ def display_morphological_annotation(sentences_info):
                     table.add_row([info["token"], info["lemma"], info["POS"], info["morph_features"]])
 
                 print("\n" + Fore.LIGHTBLUE_EX + Style.BRIGHT + "*" * 150)
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"Предложение {index + 1}:")
+                print(Fore.GREEN + Style.BRIGHT + f"Предложение {index + 1}:")
                 print(table)
 
             start_index = end_index
@@ -200,7 +201,7 @@ def display_morphological_annotation(sentences_info):
             if start_index < total_sentences:
                 while True:
                     user_input = input(
-                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить следующие 5 предложений? (y/n)" + Fore.RESET).strip().lower()
+                        Fore.GREEN + Style.BRIGHT + "Отобразить следующие 5 предложений? (y/n)" + Fore.RESET).strip().lower()
                     if user_input in ["y", "n"]:
                         break
                     print(
@@ -221,7 +222,7 @@ def display_gr_categories():
 
     for category, subcategories in GRAMMEMES_MORPH_ANNOTATION_GRAM_CATEGORIES.items():
         print(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + f"* {category.upper()}" + Fore.RESET)
+            Fore.GREEN + Style.BRIGHT + f"* {category.upper()}" + Fore.RESET)
 
         table = Table()
         table.add_column("Подкатегория", width=20, justify="center")
@@ -284,7 +285,7 @@ def display_syntactic_annotation(doc):
     """Метод для отображения синтаксической разметки в виде древовидной структуры, аналогичной Natasha."""
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "                                   СИНТАКСИЧЕСКАЯ РАЗМЕТКА" + Fore.RESET)
     print("" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(Fore.LIGHTGREEN_EX + Style.BRIGHT +
           "В  программе используется разметка синтаксических зависимостей в формате (UD) Universal "
@@ -300,18 +301,18 @@ def display_syntactic_annotation(doc):
         end = min(start + batch_size, total_sentences)
 
         for i in range(start, end):
-            print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
+            print(Fore.GREEN + Style.BRIGHT + f'\nПРЕДЛОЖЕНИЕ {i + 1}:\n' + Fore.RESET)
             doc.sents[i].syntax.print()
             print("\n" + Fore.LIGHTBLUE_EX + Style.BRIGHT + "*" * 150)
 
         start = end  # Обновляем значение start до фактического конца отображенных предложений
         print(
-            Fore.LIGHTWHITE_EX + Style.BRIGHT + f"Отображено {start} предложений. Всего предложений:"
+            Fore.LIGHTGREEN_EX + Style.BRIGHT + f"Отображено {start} предложений. Всего предложений:"
                                                 f" {total_sentences}" + Fore.RESET)
 
         if start < total_sentences:
             user_input = input(
-                Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
+                Fore.GREEN + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
                                                      " \n" + Fore.RESET).strip().lower()
 
             while user_input not in ['y', 'n']:
@@ -321,3 +322,81 @@ def display_syntactic_annotation(doc):
 
             if user_input == 'n':
                 break
+
+
+def check_db_exists(db_name):
+    """
+    Проверяет, существует ли база данных SQLite с заданным именем.
+
+    :param db_name Имя базы данных (путь к файлу базы данных).
+    :return True, если база данных существует, иначе False.
+    """
+    return os.path.exists(db_name)
+
+
+def choose_universal():
+    while True:
+        print(Fore.GREEN + Style.BRIGHT + "\n Выберите опцию: ")
+        print(Fore.GREEN  + Style.BRIGHT
+              + "  1."
+              + Style.NORMAL + Fore.BLACK + " Средние показатели индикаторов характеристики Simplification")
+        print(Fore.GREEN + Style.BRIGHT
+              + "  2."
+              + Style.NORMAL + Fore.BLACK + " Средние показатели индикаторов характеристики Normalisation")
+        print(Fore.GREEN + Style.BRIGHT
+              + "  3."
+              + Style.NORMAL + Fore.BLACK + " Средние показатели индикаторов характеристики Explicitation")
+        print(Fore.GREEN + Style.BRIGHT
+              + "  4."
+              + Style.NORMAL + Fore.BLACK + " Средние показатели индикаторов характеристики Interference")
+        print(Fore.GREEN + Style.BRIGHT
+              + "  5."
+              + Style.NORMAL + Fore.BLACK + " Средние показатели остальных индикаторов")
+        print(Fore.BLACK + Style.BRIGHT
+              + "  6."
+              + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти в главное меню")
+
+        choice = input(
+            Fore.GREEN + Style.BRIGHT + "Введите номер опции.\n " + Fore.RESET)
+        try:
+            choice = int(choice)
+            if 1 <= choice <= 6:
+                return str(choice)  # Возвращаем строку с номером выбранной опции
+            else:
+                print(Fore.RED + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.")
+
+        except ValueError:
+            print(
+                Fore.RED + Style.BRIGHT + "Пожалуйста, введите числовое снова.")
+            continue
+
+    return choice
+
+
+def choose_db():
+    while True:
+        print(Fore.GREEN + Style.BRIGHT + "\nВыберите базу данных, в которую хотите"
+                                          " сохранить результат анализа текста:")
+        print(Fore.GREEN + Style.BRIGHT + "1."
+              + Style.NORMAL + Fore.BLACK + " База непереводных текстов")
+        print(Fore.GREEN + Style.BRIGHT
+              + "2." + Style.NORMAL + Fore.BLACK + " База машинных переводов")
+        print(Fore.GREEN + Style.BRIGHT
+              + "3." + Style.NORMAL + Fore.BLACK + " База ручных переводов")
+        print(Fore.LIGHTBLACK_EX + Style.BRIGHT
+              + "4." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Вернуться в главное меню")
+        db_choice = input(Fore.GREEN + Style.BRIGHT + "Выберите номер базы данных:\n")
+        if db_choice == "1":
+            db = NON_TRANSLATED_DB_NAME
+            break
+        elif db_choice == "2":
+            db = MACHINE_TRANSLATED_DB_NAME
+            break
+        elif db_choice == "3":
+            db = HUMAN_TRANSLATED_DB_NAME
+            break
+        elif db_choice == "4":
+            return
+        else:
+            print(Fore.RED + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
+    return db

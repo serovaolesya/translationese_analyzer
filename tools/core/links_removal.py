@@ -57,7 +57,7 @@ def remove_links(text):
     # Замена дефиса, окруженного пробелами, на длинное тире, окруженное пробелами
     text_without_hyphens = re.sub(r' \- ', ' — ', text_without_repeated_punct)
 
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + '\nОчищенный текст:\n' + Fore.RESET)
+    print(Fore.LIGHTGREEN_EX + Style.BRIGHT + '\nОчищенный текст:\n' + Fore.RESET)
     print(text_without_hyphens)
 
     return text_without_hyphens
@@ -106,17 +106,17 @@ def main():
     while True:
         # Выбор режима ввода
         mode = input(
-            Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
+            Fore.LIGHTGREEN_EX + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: " + Fore.RESET).strip().lower()
 
         if mode.lower().strip() == 'f':
             while True:
                 print(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
-                print(Fore.LIGHTWHITE_EX + "1. Директория с аутентичными текстами /auth_texts/")
-                print(Fore.LIGHTWHITE_EX + "2. Директория с машинными переводами /mt_texts/")
-                print(Fore.LIGHTWHITE_EX + "3. Директория с переводами, сделанными человеком /ht_texts/")
+                    Fore.GREEN + Style.BRIGHT + "\nВыберите директорию с Вашим текстовым файлом (.txt)." + Fore.RESET)
+                print(Fore.BLACK + "1. Директория с аутентичными текстами /auth_texts/")
+                print(Fore.BLACK + "2. Директория с машинными переводами /mt_texts/")
+                print(Fore.BLACK + "3. Директория с переводами, сделанными человеком /ht_texts/")
                 dir_choice = input(
-                    Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
+                    Fore.GREEN + Style.BRIGHT + "Введите номер директории: " + Fore.RESET).strip()
                 directory = ''
                 if dir_choice == '1':
                     directory = "../auth_texts/"
@@ -128,7 +128,7 @@ def main():
                     print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nНеверный выбор. Попробуйте снова." + Fore.RESET)
                     continue
 
-                file_name = input(Fore.LIGHTYELLOW_EX + "Введите название файла в"
+                file_name = input(Fore.LIGHTGREEN_EX + "Введите название файла в"
                                                         " выбранной директории "
                                                         "(только файлы .txt): " + Fore.RESET).strip()
                 file_path = directory + file_name + '.txt'
@@ -141,12 +141,12 @@ def main():
 
         elif mode.lower().strip() == 't':
             while True:
-                print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
-                print(Fore.LIGHTWHITE_EX + "1. Аутентичный текст")
-                print(Fore.LIGHTWHITE_EX + "2. Машинный перевод")
-                print(Fore.LIGHTWHITE_EX + "3. Перевод, сделанный человеком")
+                print(Fore.GREEN + Style.BRIGHT + "\nВыберите тип текста." + Fore.RESET)
+                print(Fore.BLACK + "1. Аутентичный текст")
+                print(Fore.BLACK + "2. Машинный перевод")
+                print(Fore.BLACK + "3. Перевод, сделанный человеком")
                 text_type_choice = input(
-                    Fore.LIGHTRED_EX + Style.BRIGHT + "Введите номер типа текста: " + Fore.RESET).strip()
+                    Fore.GREEN + Style.BRIGHT + "Введите номер типа текста: " + Fore.RESET).strip()
 
                 # Выбор места сохранения
                 if text_type_choice == '1':
@@ -164,7 +164,7 @@ def main():
                 # Формирование имени файла для сохранения
                 while True:
                     file_name = input(
-                        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "Введите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
+                        Fore.LIGHTGREEN_EX + Style.BRIGHT + "Введите имя файла для сохранения результата (без расширения): " + Fore.RESET).strip()
 
                     if file_name:  # Проверяем, что имя файла не пустое
                         break

@@ -45,7 +45,7 @@ def mean_sentence_length_in_tokens(text, show_analysis=True):
     mean_sent_length = round((sum(sentence_lengths) / len(sentence_lengths)), 3) if sentence_lengths else 0
     if show_analysis:
         # Создаем таблицу для вывода
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n   СРЕДНЯЯ ДЛИНА ПРЕДЛОЖЕНИЙ В ТОКЕНАХ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n   СРЕДНЯЯ ДЛИНА ПРЕДЛОЖЕНИЙ В ТОКЕНАХ" + Fore.RESET)
         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Знаки препинания считаются как токены." + Fore.RESET)
         table = Table()
         table.add_column("Показатель", style="bold")
@@ -79,7 +79,7 @@ def mean_sentence_length_in_chars(text, show_analysis=True):
 
     mean_sent_length = round((sum(sentence_lengths) / len(sentence_lengths)), 3) if sentence_lengths else 0
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\nСРЕДНЯЯ ДЛИНА ПРЕДЛОЖЕНИЙ В СИМВОЛАХ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\nСРЕДНЯЯ ДЛИНА ПРЕДЛОЖЕНИЙ В СИМВОЛАХ" + Fore.RESET)
         table = Table()
         table.add_column("Показатель", style="bold")
         table.add_column("Значение", justify="center", min_width=10)

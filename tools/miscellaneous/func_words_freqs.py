@@ -89,7 +89,7 @@ def print_func_w__frequencies(frequencies, counts, for_corpus=False):
         frequencies = json.loads(frequencies)
         counts = json.loads(counts)
 
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                     ЧАСТОТЫ ФУНКЦИОНАЛЬНЫХ СЛОВ" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + "\n                     ЧАСТОТЫ ФУНКЦИОНАЛЬНЫХ СЛОВ" + Fore.RESET)
     wait_for_enter_to_analyze()
     table = Table()
     table.add_column("Токен\n", justify="center", style="bold", min_width=20)

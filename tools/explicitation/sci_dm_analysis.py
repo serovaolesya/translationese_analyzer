@@ -10,9 +10,9 @@ from rich.table import Table
 
 from tools.core.data.discource_markers import (final_sci_dm_list, topic_intro_dm, info_sequence, illustration_dm,
                                                material_sequence, conclusion_dm, intro_new_addit_info,
-                                               info_explanation_or_repetition,
-                                               contrast_dm, examples_introduction_dm, author_opinion, categorical_attitude_dm,
-                                               less_categorical_attitude_dm, call_to_action_dm, joint_action, putting_emphasis_dm,
+                                               info_explanation_or_repetition,contrast_dm, examples_introduction_dm,
+                                               author_opinion, author_attitude, high_certainty_modal_words,
+                                               moderate_certainty_modal_words, uncertainty_modal_words, call_to_action_dm, joint_action, putting_emphasis_dm,
                                                refer_to_background_knowledge)
 from tools.core.utils import wait_for_enter_to_analyze
 from tools.core.stop_words_extraction_removal import remove_dm
@@ -41,8 +41,14 @@ info_explanation_or_repetition = sort_by_length(info_explanation_or_repetition)
 contrast_dm = sort_by_length(contrast_dm)
 examples_introduction_dm = sort_by_length(examples_introduction_dm)
 author_opinion = sort_by_length(author_opinion)
-categorical_attitude_dm = sort_by_length(categorical_attitude_dm)
-less_categorical_attitude_dm = sort_by_length(less_categorical_attitude_dm)
+
+author_attitude = sort_by_length(author_attitude)
+
+high_certainty_modal_words = sort_by_length(high_certainty_modal_words)
+moderate_certainty_modal_words = sort_by_length(moderate_certainty_modal_words)
+
+uncertainty_modal_words = sort_by_length(uncertainty_modal_words)
+
 call_to_action_dm = sort_by_length(call_to_action_dm)
 joint_action = sort_by_length(joint_action)
 putting_emphasis_dm = sort_by_length(putting_emphasis_dm)
@@ -69,9 +75,9 @@ def sci_dm_search(text, show_analysis=True):
 
     marker_counts_str = json.dumps(dict(marker_counts), ensure_ascii=False)
     # print(marker_counts_str)
-    total_tokens = len(only_alpha_text_without_stopwords.split()) + total_num_dms
+    total_tokens_with_dms = len(only_alpha_text_without_stopwords.split()) + total_num_dms
 
-    if total_tokens == 0:
+    if total_tokens_with_dms == 0:
         return (0, '', '', 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0,
                 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0, 0, '', 0)
 
@@ -87,8 +93,13 @@ def sci_dm_search(text, show_analysis=True):
         "contrast_dm": [],
         "examples_introduction_dm": [],
         "author_opinion": [],
-        "categorical_attitude_dm": [],
-        "less_categorical_attitude_dm": [],
+        "author_attitude": [],
+
+        "high_certainty_modal_words": [],
+        "moderate_certainty_modal_words": [],
+
+        "uncertainty_modal_words": [],
+
         "call_to_action_dm": [],
         "joint_action": [],
         "putting_emphasis_dm": [],
@@ -116,10 +127,14 @@ def sci_dm_search(text, show_analysis=True):
             dm_type_counts["examples_introduction_dm"].append(dm)
         if dm in author_opinion:
             dm_type_counts["author_opinion"].append(dm)
-        if dm in categorical_attitude_dm:
-            dm_type_counts["categorical_attitude_dm"].append(dm)
-        if dm in less_categorical_attitude_dm:
-            dm_type_counts["less_categorical_attitude_dm"].append(dm)
+        if dm in author_attitude:
+            dm_type_counts["author_attitude"].append(dm)
+        if dm in high_certainty_modal_words:
+            dm_type_counts["high_certainty_modal_words"].append(dm)
+        if dm in moderate_certainty_modal_words:
+            dm_type_counts["moderate_certainty_modal_words"].append(dm)
+        if dm in uncertainty_modal_words:
+            dm_type_counts["uncertainty_modal_words"].append(dm)
         if dm in call_to_action_dm:
             dm_type_counts["call_to_action_dm"].append(dm)
         if dm in joint_action:
@@ -131,67 +146,76 @@ def sci_dm_search(text, show_analysis=True):
 
     topic_intro_dm_str = "; ".join(dm_type_counts["topic_intro_dm"])
     topic_intro_dm_count = len(dm_type_counts["topic_intro_dm"])
-    topic_intro_dm_freq = round(topic_intro_dm_count / total_tokens * 100, 3)
+    topic_intro_dm_freq = round(topic_intro_dm_count / total_tokens_with_dms * 100, 3)
 
     info_sequence_str = "; ".join(dm_type_counts["info_sequence"])
     info_sequence_count = len(dm_type_counts["info_sequence"])
-    info_sequence_freq = round(info_sequence_count / total_tokens * 100, 3)
+    info_sequence_freq = round(info_sequence_count / total_tokens_with_dms * 100, 3)
 
     illustration_dm_str = "; ".join(dm_type_counts["illustration_dm"])
     illustration_dm_count = len(dm_type_counts["illustration_dm"])
-    illustration_dm_freq = round(illustration_dm_count / total_tokens * 100, 3)
+    illustration_dm_freq = round(illustration_dm_count / total_tokens_with_dms * 100, 3)
 
     material_sequence_str = "; ".join(dm_type_counts["material_sequence"])
     material_sequence_count = len(dm_type_counts["material_sequence"])
-    material_sequence_freq = round(material_sequence_count / total_tokens * 100, 3)
+    material_sequence_freq = round(material_sequence_count / total_tokens_with_dms * 100, 3)
 
     conclusion_dm_str = "; ".join(dm_type_counts["conclusion_dm"])
     conclusion_dm_count = len(dm_type_counts["conclusion_dm"])
-    conclusion_dm_freq = round(conclusion_dm_count / total_tokens * 100, 3)
+    conclusion_dm_freq = round(conclusion_dm_count / total_tokens_with_dms * 100, 3)
 
     intro_new_addit_info_str = "; ".join(dm_type_counts["intro_new_addit_info"])
     intro_new_addit_info_count = len(dm_type_counts["intro_new_addit_info"])
-    intro_new_addit_info_freq = round(intro_new_addit_info_count / total_tokens * 100, 3)
+    intro_new_addit_info_freq = round(intro_new_addit_info_count / total_tokens_with_dms * 100, 3)
 
     info_explanation_or_repetition_str = "; ".join(dm_type_counts["info_explanation_or_repetition"])
     info_explanation_or_repetition_count = len(dm_type_counts["info_explanation_or_repetition"])
-    info_explanation_or_repetition_freq = round(info_explanation_or_repetition_count / total_tokens * 100, 3)
+    info_explanation_or_repetition_freq = round(info_explanation_or_repetition_count / total_tokens_with_dms * 100, 3)
 
     contrast_dm_str = "; ".join(dm_type_counts["contrast_dm"])
     contrast_dm_count = len(dm_type_counts["contrast_dm"])
-    contrast_dm_freq = round(contrast_dm_count / total_tokens * 100, 3)
+    contrast_dm_freq = round(contrast_dm_count / total_tokens_with_dms * 100, 3)
 
     examples_introduction_dm_str = "; ".join(dm_type_counts["examples_introduction_dm"])
     examples_introduction_dm_count = len(dm_type_counts["examples_introduction_dm"])
-    examples_introduction_dm_freq = round(examples_introduction_dm_count / total_tokens * 100, 3)
+    examples_introduction_dm_freq = round(examples_introduction_dm_count / total_tokens_with_dms * 100, 3)
 
     author_opinion_str = "; ".join(dm_type_counts["author_opinion"])
     author_opinion_count = len(dm_type_counts["author_opinion"])
-    author_opinion_freq = round(author_opinion_count / total_tokens * 100, 3)
+    author_opinion_freq = round(author_opinion_count / total_tokens_with_dms * 100, 3)
 
-    categorical_attitude_dm_str = "; ".join(dm_type_counts["categorical_attitude_dm"])
-    categorical_attitude_dm_count = len(dm_type_counts["categorical_attitude_dm"])
-    categorical_attitude_dm_freq = round(categorical_attitude_dm_count / total_tokens * 100, 3)
+    author_attitude_str = "; ".join(dm_type_counts["author_attitude"])
+    author_attitude_count = len(dm_type_counts["author_attitude"])
+    author_attitude_freq = round(author_attitude_count / total_tokens_with_dms * 100, 3)
 
-    less_categorical_attitude_dm_str = "; ".join(dm_type_counts["less_categorical_attitude_dm"])
-    less_categorical_attitude_dm_count = len(dm_type_counts["less_categorical_attitude_dm"])
-    less_categorical_attitude_dm_freq = round(less_categorical_attitude_dm_count / total_tokens * 100, 3)
+    high_certainty_modal_words_dm_str = "; ".join(dm_type_counts["high_certainty_modal_words"])
+    high_certainty_modal_words_dm_count = len(dm_type_counts["high_certainty_modal_words"])
+    high_certainty_modal_words_dm_freq = round(high_certainty_modal_words_dm_count / total_tokens_with_dms * 100, 3)
+
+    moderate_certainty_modal_words_dm_str = "; ".join(dm_type_counts["moderate_certainty_modal_words"])
+    moderate_certainty_modal_words_dm_count = len(dm_type_counts["moderate_certainty_modal_words"])
+    moderate_certainty_modal_words_dm_freq = round(moderate_certainty_modal_words_dm_count / total_tokens_with_dms * 100, 3)
+
+    uncertainty_modal_words_dm_str = "; ".join(dm_type_counts["uncertainty_modal_words"])
+    uncertainty_modal_words_dm_count = len(dm_type_counts["uncertainty_modal_words"])
+    uncertainty_modal_words_dm_freq = round(uncertainty_modal_words_dm_count / total_tokens_with_dms * 100, 3)
+
 
     call_to_action_dm_str = "; ".join(dm_type_counts["call_to_action_dm"])
     call_to_action_dm_count = len(dm_type_counts["call_to_action_dm"])
-    call_to_action_dm_freq = round(call_to_action_dm_count / total_tokens * 100, 3)
+    call_to_action_dm_freq = round(call_to_action_dm_count / total_tokens_with_dms * 100, 3)
 
     joint_action_str = "; ".join(dm_type_counts["joint_action"])
     joint_action_count = len(dm_type_counts["joint_action"])
-    joint_action_freq = round(joint_action_count / total_tokens * 100, 3)
+    joint_action_freq = round(joint_action_count / total_tokens_with_dms * 100, 3)
 
     putting_emphasis_dm_str = "; ".join(dm_type_counts["putting_emphasis_dm"])
     putting_emphasis_dm_count = len(dm_type_counts["putting_emphasis_dm"])
-    putting_emphasis_dm_freq = round(putting_emphasis_dm_count / total_tokens * 100, 3)
+    putting_emphasis_dm_freq = round(putting_emphasis_dm_count / total_tokens_with_dms * 100, 3)
 
     refer_to_background_knowledge_str = "; ".join(dm_type_counts["refer_to_background_knowledge"])
     refer_to_background_knowledge_count = len(dm_type_counts["refer_to_background_knowledge"])
-    refer_to_background_knowledge_freq = round(refer_to_background_knowledge_count / total_tokens * 100, 3)
+    refer_to_background_knowledge_freq = round(refer_to_background_knowledge_count / total_tokens_with_dms * 100, 3)
 
     if show_analysis:
         print_dm_analysis_results(
@@ -207,15 +231,17 @@ def sci_dm_search(text, show_analysis=True):
             contrast_dm_count, contrast_dm_str, contrast_dm_freq,
             examples_introduction_dm_count, examples_introduction_dm_str, examples_introduction_dm_freq,
             author_opinion_count, author_opinion_str, author_opinion_freq,
-            categorical_attitude_dm_count, categorical_attitude_dm_str, categorical_attitude_dm_freq,
-            less_categorical_attitude_dm_count, less_categorical_attitude_dm_str, less_categorical_attitude_dm_freq,
+            author_attitude_count, author_attitude_str, author_attitude_freq,
+            high_certainty_modal_words_dm_count, high_certainty_modal_words_dm_str, high_certainty_modal_words_dm_freq,
+            moderate_certainty_modal_words_dm_count, moderate_certainty_modal_words_dm_str, moderate_certainty_modal_words_dm_freq,
+            uncertainty_modal_words_dm_count, uncertainty_modal_words_dm_str, uncertainty_modal_words_dm_freq,
             call_to_action_dm_count, call_to_action_dm_str, call_to_action_dm_freq,
             joint_action_count, joint_action_str, joint_action_freq,
             putting_emphasis_dm_count, putting_emphasis_dm_str, putting_emphasis_dm_freq,
             refer_to_background_knowledge_count, refer_to_background_knowledge_str, refer_to_background_knowledge_freq,
         )
 
-    return (total_num_dms, found_sci_dms_str, marker_counts_str,
+    return (total_tokens_with_dms, total_num_dms, found_sci_dms_str, marker_counts_str,
             topic_intro_dm_count, topic_intro_dm_str, topic_intro_dm_freq,
             info_sequence_count, info_sequence_str, info_sequence_freq,
             illustration_dm_count, illustration_dm_str, illustration_dm_freq,
@@ -227,8 +253,10 @@ def sci_dm_search(text, show_analysis=True):
             contrast_dm_count, contrast_dm_str, contrast_dm_freq,
             examples_introduction_dm_count, examples_introduction_dm_str, examples_introduction_dm_freq,
             author_opinion_count, author_opinion_str, author_opinion_freq,
-            categorical_attitude_dm_count, categorical_attitude_dm_str, categorical_attitude_dm_freq,
-            less_categorical_attitude_dm_count, less_categorical_attitude_dm_str, less_categorical_attitude_dm_freq,
+            author_attitude_count, author_attitude_str, author_attitude_freq,
+            high_certainty_modal_words_dm_count, high_certainty_modal_words_dm_str, high_certainty_modal_words_dm_freq,
+            moderate_certainty_modal_words_dm_count, moderate_certainty_modal_words_dm_str, moderate_certainty_modal_words_dm_freq,
+            uncertainty_modal_words_dm_count, uncertainty_modal_words_dm_str, uncertainty_modal_words_dm_freq,
             call_to_action_dm_count, call_to_action_dm_str, call_to_action_dm_freq,
             joint_action_count, joint_action_str, joint_action_freq,
             putting_emphasis_dm_count, putting_emphasis_dm_str, putting_emphasis_dm_freq,
@@ -249,9 +277,13 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
                               examples_introduction_dm_count, examples_introduction_dm_str,
                               examples_introduction_dm_freq,
                               author_opinion_count, author_opinion_str, author_opinion_freq,
-                              categorical_attitude_dm_count, categorical_attitude_dm_str, categorical_attitude_dm_freq,
-                              less_categorical_attitude_dm_count, less_categorical_attitude_dm_str,
-                              less_categorical_attitude_dm_freq,
+                              author_attitude_count, author_attitude_str, author_attitude_freq,
+                              high_certainty_modal_words_dm_count, high_certainty_modal_words_dm_str,
+                              high_certainty_modal_words_dm_freq,
+                              moderate_certainty_modal_words_dm_count, moderate_certainty_modal_words_dm_str,
+                              moderate_certainty_modal_words_dm_freq,
+                              uncertainty_modal_words_dm_count, uncertainty_modal_words_dm_str,
+                              uncertainty_modal_words_dm_freq,
                               call_to_action_dm_count, call_to_action_dm_str, call_to_action_dm_freq,
                               joint_action_count, joint_action_str, joint_action_freq,
                               putting_emphasis_dm_count, putting_emphasis_dm_str, putting_emphasis_dm_freq,
@@ -270,7 +302,7 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
     marker_counts = ast.literal_eval(marker_counts_str)
 
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n            НАЙДЕННЫЕ ДИСКУРСИВНЫЕ МАРКЕРЫ И КОЛИЧЕСТВА ИХ ВХОЖДЕНИЙ" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "\n            НАЙДЕННЫЕ ДИСКУРСИВНЫЕ МАРКЕРЫ И КОЛИЧЕСТВА ИХ ВХОЖДЕНИЙ" + Fore.RESET)
     print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"* Всего найдено {total_num_dms} ДМ" + Fore.RESET)
 
     table1 = Table()
@@ -303,10 +335,14 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
         add_marker_rows("Введение примеров", examples_introduction_dm_str)
     if author_opinion_count:
         add_marker_rows("Мнение автора", author_opinion_str)
-    if categorical_attitude_dm_count:
-        add_marker_rows("Категоричная оценка", categorical_attitude_dm_str)
-    if less_categorical_attitude_dm_count:
-        add_marker_rows("Менее категоричная оценка", less_categorical_attitude_dm_str)
+    if author_attitude_count:
+        add_marker_rows("Отношение автора", author_attitude_str)
+    if high_certainty_modal_words_dm_count:
+        add_marker_rows("Высокая степень уверенности", high_certainty_modal_words_dm_str)
+    if moderate_certainty_modal_words_dm_count:
+        add_marker_rows("Средняя степень уверенности", moderate_certainty_modal_words_dm_str)
+    if uncertainty_modal_words_dm_count:
+        add_marker_rows("Низкая степень уверенности", uncertainty_modal_words_dm_str)
     if call_to_action_dm_count:
         add_marker_rows("Призыв к действию", call_to_action_dm_str)
     if joint_action_count:
@@ -320,7 +356,7 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
     wait_for_enter_to_analyze()
 
     print(
-        Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n              ЧАСТОТЫ НАЙДЕННЫХ ДИСКУРСИВНЫХ МАРКЕРОВ ПО КАТЕГОРИЯМ" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "\n              ЧАСТОТЫ НАЙДЕННЫХ ДИСКУРСИВНЫХ МАРКЕРОВ ПО КАТЕГОРИЯМ" + Fore.RESET)
     table2 = Table()
     table2.add_column("Категория ДМ\n", justify="left")
     table2.add_column("Абсолютная частота\n", justify="center")
@@ -338,8 +374,10 @@ def print_dm_analysis_results(total_num_dms, marker_counts_str,
         ("Противопоставление", contrast_dm_count, contrast_dm_freq),
         ("Введение примеров", examples_introduction_dm_count, examples_introduction_dm_freq),
         ("Мнение автора", author_opinion_count, author_opinion_freq),
-        ("Категоричная оценка", categorical_attitude_dm_count, categorical_attitude_dm_freq),
-        ("Менее категоричная оценка", less_categorical_attitude_dm_count, less_categorical_attitude_dm_freq),
+        ("Отношение автора", author_attitude_count, author_attitude_freq),
+        ("Высокая степень уверенности", high_certainty_modal_words_dm_count, high_certainty_modal_words_dm_freq),
+        ("Средняя степень уверенности", moderate_certainty_modal_words_dm_count, moderate_certainty_modal_words_dm_freq),
+        ("Низкая степень уверенности", uncertainty_modal_words_dm_count, uncertainty_modal_words_dm_freq),
         ("Призыв к действию", call_to_action_dm_count, call_to_action_dm_freq),
         ("Совместное действие", joint_action_count, joint_action_freq),
         ("Акцентирование внимания", putting_emphasis_dm_count, putting_emphasis_dm_freq),
@@ -374,5 +412,6 @@ if __name__ == "__main__":
     века, порядка 20% изученных видов растений будут вынуждены сместиться на север или в более высокие горные районы. 
     В частности, виды, обитающие на низких широтах и в равнинных регионах, окажутся под наибольшим давлением. Виды, 
     обладающие узкой экологической нишей и ограниченными возможностями для миграции, как, например, эндемики горных 
-    экосистем, наиболее уязвимы к этим изменениям."""
+    экосистем, наиболее уязвимы к этим изменениям.
+    """
     sci_dm_search(text)

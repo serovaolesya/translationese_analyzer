@@ -28,7 +28,7 @@ def calculate_repetition(text, show_analysis=True):
         - total_word_tokens_count: int, Общее количество словарных токенов.
     """
     if show_analysis:
-        print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                             ПОВТОРЯЕМОСТЬ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
+        print(Fore.GREEN + Style.BRIGHT + "\n                             ПОВТОРЯЕМОСТЬ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
         print(
             Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! В зависимости от размера текста подсчет повторяемости может занять какое-то время. \nПожалуйста, будьте готовы подождать.\n" + Fore.RESET)
 
@@ -90,7 +90,7 @@ def print_word_occurrences_table(sorted_content_word_counts_json, min_occurrence
     :param min_occurrences: int, Минимальное количество вхождений для отображения в таблице. Значение по умолчанию 2.
     """
     # Преобразование строки JSON обратно в словарь
-    print(Fore.LIGHTYELLOW_EX + Style.BRIGHT + "\n                КОЛИЧЕСТВА ВХОЖДЕНИЙ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
+    print(Fore.GREEN + Style.BRIGHT + "\n                КОЛИЧЕСТВА ВХОЖДЕНИЙ ЗНАМЕНАТЕЛЬНЫХ СЛОВ" + Fore.RESET)
     while True:
         try:
             user_input = input(Fore.LIGHTGREEN_EX + Style.BRIGHT +

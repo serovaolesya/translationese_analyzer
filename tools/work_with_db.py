@@ -59,6 +59,17 @@ class SaveToDatabase:
         self.connection = None
         self.cursor = None
 
+    def get_comparable_dbs(self, db_list):
+        dbs_to_compare = []
+        for db in db_list:
+            self.db_name = db
+            self.connect_db()
+            self.cursor.execute("SELECT COUNT(*) FROM Text_Passport")
+            num_texts = self.cursor.fetchone()[0]
+            if num_texts > 0:
+                dbs_to_compare.append(self.db_name)
+        return dbs_to_compare
+
     def display_corpus_info(self, choice=None):
         """Отображает информацию о корпусе текстов"""
         # Извлечение количества текстов
@@ -66,64 +77,20 @@ class SaveToDatabase:
             dbs_to_compare = []
             option_choice = None
             if choice == 'all':
-                for db in [NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME]:
-                    self.db_name = db
-                    self.connect_db()
-                    self.cursor.execute("SELECT COUNT(*) FROM Text_Passport")
-                    num_texts = self.cursor.fetchone()[0]
-
-                    if num_texts > 0:
-                        dbs_to_compare.append(self.db_name)
-                if len(dbs_to_compare) < 2:
-                    print(f'Тексты содержатся только в базе'
-                          f' "{dbs_to_compare}". Сравнение невозможно.')
-                    return
-                print(dbs_to_compare)
-                option_choice = choose_universal()
+                dbs_to_compare = self.get_comparable_dbs(
+                    [NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME])
             elif choice == 'auth_mt':
-                for db in [NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME]:
-                    self.db_name = db
-                    self.connect_db()
-                    self.cursor.execute("SELECT COUNT(*) FROM Text_Passport")
-                    num_texts = self.cursor.fetchone()[0]
-
-                    if num_texts > 0:
-                        dbs_to_compare.append(self.db_name)
-                if len(dbs_to_compare) < 2:
-                    print(f'Тексты содержатся только в базе'
-                          f' "{dbs_to_compare}". Сравнение невозможно.')
-                    return
-                print(dbs_to_compare)
-                option_choice = choose_universal()
+                dbs_to_compare = self.get_comparable_dbs([NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME])
             elif choice == 'auth_ht':
-                for db in [NON_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME]:
-                    self.db_name = db
-                    self.connect_db()
-                    self.cursor.execute("SELECT COUNT(*) FROM Text_Passport")
-                    num_texts = self.cursor.fetchone()[0]
-
-                    if num_texts > 0:
-                        dbs_to_compare.append(self.db_name)
-                if len(dbs_to_compare) < 2:
-                    print(f'Тексты содержатся только в базе'
-                          f' "{dbs_to_compare}". Сравнение невозможно.')
-                    return
-                print(dbs_to_compare)
-                option_choice = choose_universal()
+                dbs_to_compare = self.get_comparable_dbs([NON_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME])
             elif choice == 'mt_ht':
-                for db in [MACHINE_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME]:
-                    self.db_name = db
-                    self.connect_db()
-                    self.cursor.execute("SELECT COUNT(*) FROM Text_Passport")
-                    num_texts = self.cursor.fetchone()[0]
+                dbs_to_compare = self.get_comparable_dbs([MACHINE_TRANSLATED_DB_NAME, HUMAN_TRANSLATED_DB_NAME])
 
-                    if num_texts > 0:
-                        dbs_to_compare.append(self.db_name)
-                if len(dbs_to_compare) < 2:
-                    print(f'Тексты содержатся только в базе'
-                          f' "{dbs_to_compare}". Сравнение невозможно.')
-                    return
-                option_choice = choose_universal()
+            if len(dbs_to_compare) < 2:
+                print(f'Тексты содержатся только в базе "{dbs_to_compare}". Сравнение невозможно.')
+                return
+
+            option_choice = choose_universal()
 
             if option_choice == '1':
                 comparison_results = {}
@@ -134,8 +101,38 @@ class SaveToDatabase:
                         comparison=True,
                         comparison_results=comparison_results
                     )
-                # Выводим сравнительную таблицу
                 self.print_simpl_comparison_table(comparison_results)
+
+            elif option_choice == '2':
+                comparison_results = {}
+                print(
+                    Fore.LIGHTRED_EX + Style.BRIGHT + "Пожалуйста, подождите.\n")
+                for db in dbs_to_compare:
+                    self.db_name = db
+                    self.connect_db()
+                    self.display_normalisation_features_for_corpus(
+                        comparison=True,
+                        comparison_results=comparison_results
+                    )
+                    # Затем добавляем расчет PMI
+                    self.calculate_pmi_for_corpus(
+                        comparison=True,
+                        comparison_results=comparison_results
+                    )
+
+                self.print_normalisation_comparison_table(comparison_results)
+
+            elif option_choice == '3':
+                comparison_results = {}
+                for db in dbs_to_compare:
+                    self.db_name = db
+                    self.connect_db()
+                    self.display_explicitation_features_for_corpus(
+                        comparison=True,
+                        comparison_results=comparison_results
+                    )
+                self.print_explicitation_comparison_table(comparison_results)
+
             elif option_choice == '4':
                 comparison_results = {}
                 for db in dbs_to_compare:
@@ -145,8 +142,20 @@ class SaveToDatabase:
                         comparison=True,
                         comparison_results=comparison_results
                     )
-                print(comparison_results)
-                self.print_pos_unigrams_comparison_table(comparison_results)
+                # print(comparison_results)
+                self.print_ngrams_comparison_table(comparison_results)
+
+            elif option_choice == '5':
+                comparison_results = {}
+                for db in dbs_to_compare:
+                    self.db_name = db
+                    self.connect_db()
+                    self.display_miscellaneous_features_for_corpus(
+                        comparison=True,
+                        comparison_results=comparison_results
+
+                    )
+                self.print_miscellaneous_comparison_table(comparison_results)
         else:
             corpus_name = ''
             if self.db_name == NON_TRANSLATED_DB_NAME:
@@ -174,76 +183,7 @@ class SaveToDatabase:
 
                 elif option_choice == "2":
                     self.display_normalisation_features_for_corpus()
-
-                    def show_pmi():
-                        print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
-                        print(
-                            Fore.GREEN + Style.BRIGHT + "                        АНАЛИЗ " + Fore.LIGHTGREEN_EX + Style.BRIGHT + "ПОКАЗАТЕЛЯ PMI" + Fore.GREEN + Style.BRIGHT + " ДЛЯ КОРПУСА ТЕКСТОВ" + Fore.RESET)
-                        print(Fore.LIGHTWHITE_EX + "*" * 100)
-
-                        print(
-                            Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nДалее будет проведен подсчет PMI всех рядом"
-                                                                 "стоящих друг с другом (word1word2) биграммов в "
-                                                                 "тексте.")
-                        print(
-                            Fore.LIGHTRED_EX + Style.BRIGHT + "ВНИМАНИЕ! Точность подсчета PMI напрямую зависит от "
-                                                              "размера корпуса.При небольшом размере корпуса\n"
-                                                              "высока вероятность получить искусственно завышенные "
-                                                              "значения PMI. Случайные редкие словосочетания\n"
-                                                              "могут выявить высокие значения PMI, что будет говорить "
-                                                              "не о сильной ассоциативной связи между\n"
-                                                              "словами, а о недостаточно большом размере корпуса.\n")
-                        print(
-                            Fore.LIGHTGREEN_EX + Style.BRIGHT + "При большом размере корпуса подсчет PMI может занять какое-то время. "
-                                                                "Пожалуйста, будьте готовы подождать.\n")
-
-                        wait_for_enter_to_analyze()
-                        # Собираем тексты для подсчета PMI
-                        self.cursor.execute("SELECT text FROM Text_Passport")
-                        texts = self.cursor.fetchall()
-                        corpus_set = set(text[0] for text in texts)
-
-                        pmi_values, total_above_zero, normalized_bigrams_above_zero = calculate_pmi(
-                            corpus_set=corpus_set)
-
-                        # Таблица для отображения результатов PMI
-                        print(
-                            Fore.GREEN + Style.BRIGHT + f"\nPMI БИГРАММОВ КОРПУСА" + Fore.RESET)
-                        print(
-                            Fore.GREEN + Style.BRIGHT + f'Всего найдено {total_above_zero} биграммов с PMI > 0.')
-                        print(
-                            Fore.GREEN + Style.BRIGHT + f'Нормализованная частота биграммов с PMI>0: '
-                                                                f'{normalized_bigrams_above_zero}.')
-                        while True:
-                            print(
-                                Fore.GREEN + Style.BRIGHT + "\nОтобразить биграммы и их PMI(y/n)?")
-                            show_bigrams_pmi = input()
-                            if show_bigrams_pmi.lower() == 'y':
-                                print(
-                                    Fore.LIGHTRED_EX + Style.BRIGHT + "\nВнимание! Вывод значений PMI для всех биграммов может занять"
-                                                                      " много места на экране. \nБиграммы будут представлены в лемматизированном виде.")
-                                display_pmi_table(pmi_values)
-                                wait_for_enter_to_choose_opt()
-                                break
-                            elif show_bigrams_pmi.lower() == 'n':
-                                break
-                            else:
-                                print(
-                                    Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.")
-                                continue
-
-                    while True:
-                        print(
-                            Fore.GREEN + Style.BRIGHT + "\nОтобразить PMI (Pointwise Mutual Information) корпуса текстов (y/n)?")
-                        show_pmi_choice = input()
-                        if show_pmi_choice.lower() == 'y':
-                            show_pmi()
-                            break
-                        elif show_pmi_choice.lower() == 'n':
-                            break
-                        else:
-                            print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.")
-                            continue
+                    self.calculate_pmi_for_corpus()
 
                 elif option_choice == "3":
                     self.display_explicitation_features_for_corpus()
@@ -261,14 +201,74 @@ class SaveToDatabase:
                         Fore.LIGHTRED_EX + Style.BRIGHT + "Неправильный выбор. Пожалуйста, выберите один из предложенных вариантов.\n" + Fore.RESET)
 
             else:
-                if self.db_name == 'ht_texts_corpus.db':
+
+                print(
+                    Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\n{corpus_name}" + Fore.GREEN + Style.BRIGHT + " НЕ СОДЕРЖИТ НИ ОДНОГО ТЕКСТА" + Fore.RESET)
+                wait_for_enter_to_choose_opt()
+
+    def calculate_pmi_for_corpus(self, comparison=False, comparison_results=None):
+        """Выполняет подсчет PMI для корпуса текстов"""
+        if not comparison:
+            print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
+            print(
+                Fore.GREEN + Style.BRIGHT + "               c         АНАЛИЗ " + Fore.LIGHTGREEN_EX + Style.BRIGHT + "ПОКАЗАТЕЛЯ PMI" + Fore.GREEN + Style.BRIGHT + " ДЛЯ КОРПУСА" + Fore.RESET)
+            print(Fore.LIGHTWHITE_EX + "*" * 100)
+
+            print(
+                Fore.GREEN + Style.BRIGHT + "\nДалее будет проведен подсчет PMI всех рядом"
+                                            "стоящих друг с другом (word1_word2) биграммов в "
+                                            "тексте.")
+            print(
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + "ВНИМАНИЕ! Точность подсчета PMI напрямую зависит от "
+                                                    "размера корпуса.При небольшом размере корпуса\n"
+                                                    "высока вероятность получить искусственно завышенные "
+                                                    "значения PMI. Случайные редкие словосочетания\n"
+                                                    "могут выявить высокие значения PMI, что будет говорить "
+                                                    "не о сильной ассоциативной связи между\n"
+                                                    "словами, а о недостаточно большом размере корпуса.\n"
+                                                    "\nПри большом размере корпуса подсчет PMI"
+                                                    " может занять некоторое время."
+            )
+            print(
+                Fore.LIGHTRED_EX + Style.BRIGHT + "Пожалуйста, подождите.\n")
+
+        # Собираем тексты для подсчета PMI
+        self.cursor.execute("SELECT text FROM Text_Passport")
+        texts = self.cursor.fetchall()
+        corpus_set = set(text[0] for text in texts)
+
+        pmi_values, total_above_zero, normalized_bigrams_above_zero = calculate_pmi(
+            corpus_set=corpus_set)
+
+        if comparison and comparison_results is not None:
+            comparison_results[self.db_name]['normalized_bigrams_above_zero'] = normalized_bigrams_above_zero
+            comparison_results[self.db_name]['total_above_zero'] = total_above_zero
+
+        else:
+            print(
+                Fore.GREEN + Style.BRIGHT + f"\nPMI БИГРАММОВ КОРПУСА" + Fore.RESET)
+            print(
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + f'Всего найдено {total_above_zero} биграммов с PMI > 0.')
+            print(
+                Fore.LIGHTGREEN_EX + Style.BRIGHT + f'Нормализованная частота биграммов с PMI>0: '
+                                                    f'{normalized_bigrams_above_zero}.')
+            while True:
+                print(
+                    Fore.GREEN + Style.BRIGHT + "\nОтобразить биграммы и их PMI(y/n)?")
+                show_bigrams_pmi = input()
+                if show_bigrams_pmi.lower() == 'y':
                     print(
-                        Fore.LIGHTGREEN_EX + Style.BRIGHT + f"\n{corpus_name}" + Fore.GREEN + Style.BRIGHT + " НЕ СОДЕРЖИТ НИ ОДНОГО ТЕКСТА" + Fore.RESET)
+                        Fore.LIGHTRED_EX + Style.BRIGHT + "\nВнимание! Вывод значений PMI для всех биграммов может занять"
+                                                          " много места на экране. \nБиграммы будут представлены в лемматизированном виде.")
+                    display_pmi_table(pmi_values)
                     wait_for_enter_to_choose_opt()
+                    break
+                elif show_bigrams_pmi.lower() == 'n':
+                    break
                 else:
                     print(
-                        Fore.LIGHTRED_EX + Style.BRIGHT + f"\n{corpus_name}" + Fore.GREEN + Style.BRIGHT + " НЕ СОДЕРЖИТ НИ ОДНОГО ТЕКСТА" + Fore.RESET)
-                    wait_for_enter_to_choose_opt()
+                        Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор. Пожалуйста, попробуйте снова.")
+                    continue
 
     def display_texts(self):
         """Отображает все тексты с их порядковыми номерами и
@@ -339,7 +339,7 @@ class SaveToDatabase:
 
                 choice = input(
                     Fore.GREEN + Style.BRIGHT + "Выберите, какую информацию о тексте"
-                                                         " хотите посмотреть.\n " + Fore.RESET)
+                                                " хотите посмотреть.\n " + Fore.RESET)
 
                 if choice == "1":
                     print(
@@ -1308,7 +1308,7 @@ class SaveToDatabase:
         else:
             print(Fore.LIGHTRED_EX + "Данные о показателях Simplification отсутствуют." + Fore.RESET)
 
-    def display_normalisation_features_for_corpus(self):
+    def display_normalisation_features_for_corpus(self, comparison=False, comparison_results=None):
         """Отображение средних значений индикаторов универсалии Normalisation"""
 
         self.cursor.execute('''
@@ -1324,25 +1324,31 @@ class SaveToDatabase:
 
         if result:
             avg_repetition, avg_repeated_content_words, avg_total_word_tokens = result
+            if comparison and comparison_results is not None:
+                comparison_results[self.db_name] = {
+                    'avg_repetition': avg_repetition,
+                    'avg_repeated_content_words': avg_repeated_content_words,
+                    'avg_total_word_tokens': avg_total_word_tokens
+                }
+            else:
+                print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+                print(
+                    Fore.GREEN + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ ХАРАКТЕРИСТИКИ' +
+                    Fore.LIGHTGREEN_EX + Style.BRIGHT + ' NORMALISATION')
+                print(Fore.LIGHTWHITE_EX + "*" * 80)
+                table = Table()
 
-            print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
-            print(
-                Fore.GREEN + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ ХАРАКТЕРИСТИКИ' +
-                Fore.LIGHTGREEN_EX + Style.BRIGHT + ' NORMALISATION')
-            print(Fore.LIGHTWHITE_EX + "*" * 80)
-            table = Table()
+                table.add_column("Показатель", justify="left", no_wrap=True, style="bold")
+                table.add_column("Значение", justify="center")
 
-            table.add_column("Показатель", justify="left", no_wrap=True, style="bold")
-            table.add_column("Значение", justify="center")
+                table.add_row("Повторяемость", f"{avg_repetition:.2f}%")
+                table.add_row("Количество повторяющихся знаменательных слов", f"{avg_repeated_content_words:.2f}")
+                table.add_row("Количество словарных токенов", f"{avg_total_word_tokens:.2f}")
 
-            table.add_row("Повторяемость", f"{avg_repetition:.2f}%")
-            table.add_row("Количество повторяющихся знаменательных слов", f"{avg_repeated_content_words:.2f}")
-            table.add_row("Количество словарных токенов", f"{avg_total_word_tokens:.2f}")
+                console.print(table)
+                wait_for_enter_to_analyze()
 
-            console.print(table)
-            wait_for_enter_to_analyze()
-
-    def display_explicitation_features_for_corpus(self):
+    def display_explicitation_features_for_corpus(self, comparison=False, comparison_results=None):
         """Отображает средние показатели индикаторов универсалии Explicitation"""
         self.cursor.execute('''
             SELECT 
@@ -1434,79 +1440,105 @@ class SaveToDatabase:
                 avg_refer_to_background_knowledge_freq
             ) = result
 
-            print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
-            print(
-                Fore.GREEN + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ ХАРАКТЕРИСТИКИ'
-                + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' EXPLICITATION')
-            print(Fore.LIGHTWHITE_EX + "*" * 80)
+            if comparison and comparison_results is not None:
+                comparison_results[self.db_name] = {
+                    'explicit_naming_ratio': avg_explicit_naming_ratio,
+                    'single_naming': avg_single_naming,
+                    'mean_multiple_naming': avg_mean_multiple_naming,
+                    'named_entities_count': avg_named_entities_count,
+                    'sci_markers_total_count': avg_sci_markers_total_count,
+                    'topic_intro_dm_freq': avg_topic_intro_dm_freq,
+                    'info_sequence_freq': avg_info_sequence_freq,
+                    'illustration_dm_freq': avg_illustration_dm_freq,
+                    'material_sequence_freq': avg_material_sequence_freq,
+                    'conclusion_dm_freq': avg_conclusion_dm_freq,
+                    'intro_new_addit_info_freq': avg_intro_new_addit_info_freq,
+                    'info_explanation_or_repetition_freq': avg_info_explanation_or_repetition_freq,
+                    'contrast_dm_freq': avg_contrast_dm_freq,
+                    'examples_introduction_dm_freq': avg_examples_introduction_dm_freq,
+                    'author_opinion_freq': avg_author_opinion_freq,
+                    'author_attitude_freq': avg_author_attitude_freq,
+                    'high_certainty_modal_words_freq': avg_high_certainty_modal_words_freq,
+                    'moderate_certainty_modal_words_freq': avg_moderate_certainty_modal_words_freq,
+                    'uncertainty_modal_words_freq': avg_uncertainty_modal_words_freq,
+                    'call_to_action_dm_freq': avg_call_to_action_dm_freq,
+                    'joint_action_freq': avg_joint_action_freq,
+                    'putting_emphasis_dm_freq': avg_putting_emphasis_dm_freq,
+                    'refer_to_background_knowledge_freq': avg_refer_to_background_knowledge_freq
+                }
+            else:
+                print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+                print(
+                    Fore.GREEN + Style.BRIGHT + '                СРЕДНИЕ ПОКАЗАТЕЛИ ХАРАКТЕРИСТИКИ'
+                    + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' EXPLICITATION')
+                print(Fore.LIGHTWHITE_EX + "*" * 80)
 
-            table = Table()
+                table = Table()
 
-            # Добавляем колонки
-            table.add_column("Индикатор", justify="left", no_wrap=True, style="bold")
-            table.add_column("Значение", justify="center")
+                # Добавляем колонки
+                table.add_column("Индикатор", justify="left", no_wrap=True, style="bold")
+                table.add_column("Значение", justify="center")
 
-            # Заполняем таблицу данными
-            table.add_row("Explicit naming", f"{avg_explicit_naming_ratio:.2f}%")
-            table.add_row("Single naming", f"{avg_single_naming:.2f}%")
-            table.add_row("Средняя длина именованных сущностей (в токенах)", f"{avg_mean_multiple_naming:.2f}")
-            table.add_row("Количество именованных сущностей", f"{avg_named_entities_count:.2f}")
-            console.print(table)
-            wait_for_enter_to_analyze()
+                # Заполняем таблицу данными
+                table.add_row("Explicit naming", f"{avg_explicit_naming_ratio:.2f}%")
+                table.add_row("Single naming", f"{avg_single_naming:.2f}%")
+                table.add_row("Средняя длина именованных сущностей (в токенах)", f"{avg_mean_multiple_naming:.2f}")
+                table.add_row("Количество именованных сущностей", f"{avg_named_entities_count:.2f}")
+                console.print(table)
+                wait_for_enter_to_analyze()
 
-            print(
-                Fore.GREEN + Style.BRIGHT + "\n           СРЕДНИЕ ПОКАЗАТЕЛИ ЧАСТОТ ДИСКУРСИВНЫХ МАРКЕРОВ "
-                                                     "ПО КАТЕГОРИЯМ" + Fore.RESET)
-            print(
-                Fore.BLUE + Style.DIM + f"                        В среднем тексты содержат "
-                                        f"{avg_sci_markers_total_count:.0F} ДМ" + Fore.RESET)
+                print(
+                    Fore.GREEN + Style.BRIGHT + "\n           СРЕДНИЕ ПОКАЗАТЕЛИ ЧАСТОТ ДИСКУРСИВНЫХ МАРКЕРОВ "
+                                                "ПО КАТЕГОРИЯМ" + Fore.RESET)
+                print(
+                    Fore.BLUE + Style.DIM + f"                        В среднем тексты содержат "
+                                            f"{avg_sci_markers_total_count:.0F} ДМ" + Fore.RESET)
 
-            freq_table = Table()
-            freq_table.add_column("Категория ДМ\n", justify="left", no_wrap=True)
-            freq_table.add_column("Абсолютная частота\n", justify="center")
-            freq_table.add_column("Нормализованная частота (%)", justify="center")
+                freq_table = Table()
+                freq_table.add_column("Категория ДМ\n", justify="left", no_wrap=True)
+                freq_table.add_column("Абсолютная частота\n", justify="center")
+                freq_table.add_column("Нормализованная частота (%)", justify="center")
 
-            frequency_data = [
-                ("Введение в тему", avg_topic_intro_dm_count, avg_topic_intro_dm_freq),
-                ("Порядок следования информации", avg_info_sequence_count, avg_info_sequence_freq),
-                ("Иллюстративный материал", avg_illustration_dm_count, avg_illustration_dm_freq),
-                ("Порядок расположения материала", avg_material_sequence_count, avg_material_sequence_freq),
-                ("Вывод/заключение", avg_conclusion_dm_count, avg_conclusion_dm_freq),
-                ("Введение новой/доп. информации", avg_intro_new_addit_info_count, avg_intro_new_addit_info_freq),
-                ("Повтор/конкретизация информации", avg_info_explanation_or_repetition_count,
-                 avg_info_explanation_or_repetition_freq),
-                ("Противопоставление", avg_contrast_dm_count, avg_contrast_dm_freq),
-                ("Введение примеров", avg_examples_introduction_dm_count, avg_examples_introduction_dm_freq),
-                ("Мнение автора", avg_author_opinion_count, avg_author_opinion_freq),
-                ("Отношение автора", avg_author_attitude_count, avg_author_attitude_freq),
-                ("Высокая степень уверенности", avg_high_certainty_modal_words_count,
-                 avg_high_certainty_modal_words_freq),
-                ("Средняя степень уверенности", avg_moderate_certainty_modal_words_count,
-                 avg_moderate_certainty_modal_words_freq),
-                ("Низкая степень уверенности", avg_uncertainty_modal_words_count,
-                 avg_uncertainty_modal_words_freq),
-                ("Призыв к действию", avg_call_to_action_dm_count, avg_call_to_action_dm_freq),
-                ("Совместное действие", avg_joint_action_count, avg_joint_action_freq),
-                ("Акцентирование внимания", avg_putting_emphasis_dm_count, avg_putting_emphasis_dm_freq),
-                ("Отсылка к фоновым знаниям", avg_refer_to_background_knowledge_count,
-                 avg_refer_to_background_knowledge_freq),
-            ]
+                frequency_data = [
+                    ("Введение в тему", avg_topic_intro_dm_count, avg_topic_intro_dm_freq),
+                    ("Порядок следования информации", avg_info_sequence_count, avg_info_sequence_freq),
+                    ("Иллюстративный материал", avg_illustration_dm_count, avg_illustration_dm_freq),
+                    ("Порядок расположения материала", avg_material_sequence_count, avg_material_sequence_freq),
+                    ("Вывод/заключение", avg_conclusion_dm_count, avg_conclusion_dm_freq),
+                    ("Введение новой/доп. информации", avg_intro_new_addit_info_count, avg_intro_new_addit_info_freq),
+                    ("Повтор/конкретизация информации", avg_info_explanation_or_repetition_count,
+                     avg_info_explanation_or_repetition_freq),
+                    ("Противопоставление", avg_contrast_dm_count, avg_contrast_dm_freq),
+                    ("Введение примеров", avg_examples_introduction_dm_count, avg_examples_introduction_dm_freq),
+                    ("Мнение автора", avg_author_opinion_count, avg_author_opinion_freq),
+                    ("Отношение автора", avg_author_attitude_count, avg_author_attitude_freq),
+                    ("Высокая степень уверенности", avg_high_certainty_modal_words_count,
+                     avg_high_certainty_modal_words_freq),
+                    ("Средняя степень уверенности", avg_moderate_certainty_modal_words_count,
+                     avg_moderate_certainty_modal_words_freq),
+                    ("Низкая степень уверенности", avg_uncertainty_modal_words_count,
+                     avg_uncertainty_modal_words_freq),
+                    ("Призыв к действию", avg_call_to_action_dm_count, avg_call_to_action_dm_freq),
+                    ("Совместное действие", avg_joint_action_count, avg_joint_action_freq),
+                    ("Акцентирование внимания", avg_putting_emphasis_dm_count, avg_putting_emphasis_dm_freq),
+                    ("Отсылка к фоновым знаниям", avg_refer_to_background_knowledge_count,
+                     avg_refer_to_background_knowledge_freq),
+                ]
 
-            # Фильтрация по частоте > 0
-            frequency_data_filtered = [(cat, count, freq) for cat, count, freq in frequency_data if count > 0]
+                # Фильтрация по частоте > 0
+                frequency_data_filtered = [(cat, count, freq) for cat, count, freq in frequency_data if count > 0]
 
-            # Сортировка по абсолютной частоте в порядке убывания
-            frequency_data_sorted = sorted(frequency_data_filtered, key=lambda x: x[1], reverse=True)
+                # Сортировка по абсолютной частоте в порядке убывания
+                frequency_data_sorted = sorted(frequency_data_filtered, key=lambda x: x[1], reverse=True)
 
-            # Добавление строк в таблицу после сортировки
-            for category_name, count, freq in frequency_data_sorted:
-                freq_table.add_row(category_name, f"{count:.3f}", f"{freq:.3f}%")
+                # Добавление строк в таблицу после сортировки
+                for category_name, count, freq in frequency_data_sorted:
+                    freq_table.add_row(category_name, f"{count:.3f}", f"{freq:.3f}%")
 
-            # Выводим таблицу
-            console.print(freq_table)
-            wait_for_enter_to_choose_opt()
+                console.print(freq_table)
+                wait_for_enter_to_choose_opt()
 
-    def display_miscellaneous_features_for_corpus(self):
+    def display_miscellaneous_features_for_corpus(self, comparison=False, comparison_results=None):
         """Отображение взвешенных средних показателей индикаторов Miscellaneous_features."""
 
         # Извлечение агрегированных данных для количественных показателей
@@ -1523,25 +1555,33 @@ class SaveToDatabase:
         if result_aggregated:
             avg_passive_to_all_v_ratio, avg_passive_verbs_count, avg_all_verbs_count, avg_readability_index = result_aggregated
 
-            print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
-            print(
-                Fore.GREEN + Style.BRIGHT + '      СРЕДНИЕ ПОКАЗАТЕЛИ ' +
-                Fore.LIGHTGREEN_EX + Style.BRIGHT + 'ОСТАЛЬНЫХ ИНДИКАТОРОВ')
-            print(Fore.LIGHTWHITE_EX + "*" * 80)
+            if comparison:
+                comparison_results[self.db_name] = {
+                    'avg_passive_to_all_v_ratio': avg_passive_to_all_v_ratio,
+                    'avg_passive_verbs_count': avg_passive_verbs_count,
+                    'avg_all_verbs_count': avg_all_verbs_count,
+                    'avg_readability_index': avg_readability_index
+                }
+            else:
+                print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+                print(
+                    Fore.GREEN + Style.BRIGHT + '      СРЕДНИЕ ПОКАЗАТЕЛИ ' +
+                    Fore.LIGHTGREEN_EX + Style.BRIGHT + 'ОСТАЛЬНЫХ ИНДИКАТОРОВ')
+                print(Fore.LIGHTWHITE_EX + "*" * 80)
 
-            table = Table()
-            table.add_column("Показатель", justify="left", style="bold")
-            table.add_column("Значение", justify="center", min_width=15)
+                table = Table()
+                table.add_column("Показатель", justify="left", style="bold")
+                table.add_column("Значение", justify="center", min_width=15)
 
-            table.add_row("Отношение пассивных глаголов\nко всем глаголам (%)", f"{avg_passive_to_all_v_ratio:.3f}%")
-            table.add_row("Пассивные глаголы", f"{avg_passive_verbs_count:.2f}")
-            table.add_row("Все глаголы", f"{avg_all_verbs_count:.2f}")
-            table.add_row("\nИндекс читаемости по Флешу", f"\n{avg_readability_index:.3f}")
+                table.add_row("Отношение пассивных глаголов\nко всем глаголам (%)",
+                              f"{avg_passive_to_all_v_ratio:.3f}%")
+                table.add_row("Пассивные глаголы", f"{avg_passive_verbs_count:.2f}")
+                table.add_row("Все глаголы", f"{avg_all_verbs_count:.2f}")
+                table.add_row("\nИндекс читаемости по Флешу", f"\n{avg_readability_index:.3f}")
 
-            console.print(table)
-            wait_for_enter_to_analyze()
+                console.print(table)
+                wait_for_enter_to_analyze()
 
-        # Извлечение данных для частот служебных слов и знаков препинания
         self.cursor.execute('''
             SELECT func_words_freq, 
                    func_words_counts,
@@ -1756,97 +1796,113 @@ class SaveToDatabase:
             avg_negative_pronouns_counts = {pronoun: count / total_tokens_sum for pronoun, count in
                                             pronoun_counts_accum['negative'].items()}
 
-            print(Fore.GREEN + Style.BRIGHT + '\n                 СРЕДНИЕ ЧАСТОТЫ СЛУЖЕБНЫХ СЛОВ')
-            wait_for_enter_to_analyze()
-            table_func_words = Table()
-            table_func_words.add_column("Слово\n", justify="left")
-            table_func_words.add_column("Абсолютная частота\n", justify="center")
-            table_func_words.add_column("Нормализованная частота\n(%)", justify="center")
+            if comparison:
+                comparison_results[self.db_name].update({
+                    'avg_func_words_freq': avg_func_words_freq,
+                    'avg_punct_normalized_frequency': avg_punct_normalized_frequency,
+                    'avg_punct_to_all_punct_frequency': avg_punct_to_all_punct_frequency,
+                    'avg_pers_possessive_pronouns_frequencies': avg_pers_possessive_pronouns_frequencies,
+                    'avg_reflexive_pronoun_frequencies': avg_reflexive_pronoun_frequencies,
+                    'avg_demonstrative_pronouns_frequencies': avg_demonstrative_pronouns_frequencies,
+                    'avg_defining_pronouns_frequencies': avg_defining_pronouns_frequencies,
+                    'avg_relative_pronouns_frequencies': avg_relative_pronouns_frequencies,
+                    'avg_indefinite_pronouns_frequencies': avg_indefinite_pronouns_frequencies,
+                    'avg_negative_pronouns_frequencies': avg_negative_pronouns_frequencies,
+                })
 
-            for word, freq in sorted(avg_func_words_freq.items(), key=lambda item: item[1], reverse=True):
-                count = avg_func_words_counts.get(word, 0)
-                table_func_words.add_row(word, f"{count:.3f}", f"{freq:.3f}%")
+            else:
 
-            console.print(table_func_words)
-            wait_for_enter_to_analyze()
+                print(Fore.GREEN + Style.BRIGHT + '\n                 СРЕДНИЕ ЧАСТОТЫ СЛУЖЕБНЫХ СЛОВ')
+                wait_for_enter_to_analyze()
+                table_func_words = Table()
+                table_func_words.add_column("Слово\n", justify="left")
+                table_func_words.add_column("Абсолютная частота\n", justify="center")
+                table_func_words.add_column("Нормализованная частота\n(%)", justify="center")
 
-            def show_average_pronouns_info(pronouns_type, pronouns_freq, pronouns_count):
-                pro_name = ''
-                if pronouns_type == 'pers_possessive':
-                    pro_name = 'ЛИЧНЫХ И ПРИТЯЖАТЕЛЬНЫХ'
-                elif pronouns_type == 'reflexive_pronoun':
-                    pro_name = 'ВОЗВРАТНЫХ'
-                elif pronouns_type == 'demonstrative_pronouns':
-                    pro_name = 'УКАЗАТЕЛЬНЫХ'
-                elif pronouns_type == 'defining_pronouns':
-                    pro_name = 'ОПРЕДЕЛИТЕЛЬНЫХ'
-                elif pronouns_type == 'relative_pronouns':
-                    pro_name = 'ОТНОСИТЕЛЬНЫХ'
-                elif pronouns_type == 'indefinite_pronouns':
-                    pro_name = 'НЕОПРЕДЕЛЕННЫХ'
-                elif pronouns_type == 'negative_pronouns':
-                    pro_name = 'ОТРИЦАТЕЛЬНЫХ'
+                for word, freq in sorted(avg_func_words_freq.items(), key=lambda item: item[1], reverse=True):
+                    count = avg_func_words_counts.get(word, 0)
+                    table_func_words.add_row(word, f"{count:.3f}", f"{freq:.3f}%")
 
-                print(Fore.GREEN + Style.BRIGHT + f'\n              СРЕДНИЕ ЧАСТОТЫ {pro_name} МЕСТОИМЕНИЙ')
-                table_pronouns = Table()
-                table_pronouns.add_column("Местоимение\n", justify="center")
-                table_pronouns.add_column("Абсолютная частота\n", justify="center")
-                table_pronouns.add_column("Нормализованная частота\n(%)", justify="center")
+                console.print(table_func_words)
+                wait_for_enter_to_analyze()
 
-                for pronoun, freq in sorted(pronouns_freq.items(), key=lambda item: item[1], reverse=True):
-                    count = pronouns_count.get(pronoun, 0)
-                    table_pronouns.add_row(pronoun, f'{count:.3f}', f"{freq:.3f}%")
+                def show_average_pronouns_info(pronouns_type, pronouns_freq, pronouns_count):
+                    pro_name = ''
+                    if pronouns_type == 'pers_possessive':
+                        pro_name = 'ЛИЧНЫХ И ПРИТЯЖАТЕЛЬНЫХ'
+                    elif pronouns_type == 'reflexive_pronoun':
+                        pro_name = 'ВОЗВРАТНЫХ'
+                    elif pronouns_type == 'demonstrative_pronouns':
+                        pro_name = 'УКАЗАТЕЛЬНЫХ'
+                    elif pronouns_type == 'defining_pronouns':
+                        pro_name = 'ОПРЕДЕЛИТЕЛЬНЫХ'
+                    elif pronouns_type == 'relative_pronouns':
+                        pro_name = 'ОТНОСИТЕЛЬНЫХ'
+                    elif pronouns_type == 'indefinite_pronouns':
+                        pro_name = 'НЕОПРЕДЕЛЕННЫХ'
+                    elif pronouns_type == 'negative_pronouns':
+                        pro_name = 'ОТРИЦАТЕЛЬНЫХ'
 
-                console.print(table_pronouns)
+                    print(Fore.GREEN + Style.BRIGHT + f'\n              СРЕДНИЕ ЧАСТОТЫ {pro_name} МЕСТОИМЕНИЙ')
+                    table_pronouns = Table()
+                    table_pronouns.add_column("Местоимение\n", justify="center")
+                    table_pronouns.add_column("Абсолютная частота\n", justify="center")
+                    table_pronouns.add_column("Нормализованная частота\n(%)", justify="center")
 
-            show_average_pronouns_info('pers_possessive', avg_pers_possessive_pronouns_frequencies,
-                                       avg_pers_possessive_pronouns_counts)
-            wait_for_enter_to_analyze()
+                    for pronoun, freq in sorted(pronouns_freq.items(), key=lambda item: item[1], reverse=True):
+                        count = pronouns_count.get(pronoun, 0)
+                        table_pronouns.add_row(pronoun, f'{count:.3f}', f"{freq:.3f}%")
 
-            show_average_pronouns_info('reflexive_pronoun', avg_reflexive_pronoun_frequencies,
-                                       avg_reflexive_pronoun_counts)
-            wait_for_enter_to_analyze()
+                    console.print(table_pronouns)
 
-            show_average_pronouns_info('demonstrative_pronouns', avg_demonstrative_pronouns_frequencies,
-                                       avg_demonstrative_pronouns_counts)
-            wait_for_enter_to_analyze()
+                show_average_pronouns_info('pers_possessive', avg_pers_possessive_pronouns_frequencies,
+                                           avg_pers_possessive_pronouns_counts)
+                wait_for_enter_to_analyze()
 
-            show_average_pronouns_info('defining_pronouns', avg_defining_pronouns_frequencies,
-                                       avg_defining_pronouns_counts)
-            wait_for_enter_to_analyze()
+                show_average_pronouns_info('reflexive_pronoun', avg_reflexive_pronoun_frequencies,
+                                           avg_reflexive_pronoun_counts)
+                wait_for_enter_to_analyze()
 
-            show_average_pronouns_info('relative_pronouns', avg_relative_pronouns_frequencies,
-                                       avg_relative_pronouns_counts)
-            wait_for_enter_to_analyze()
+                show_average_pronouns_info('demonstrative_pronouns', avg_demonstrative_pronouns_frequencies,
+                                           avg_demonstrative_pronouns_counts)
+                wait_for_enter_to_analyze()
 
-            show_average_pronouns_info('indefinite_pronouns', avg_indefinite_pronouns_frequencies,
-                                       avg_indefinite_pronouns_counts)
-            wait_for_enter_to_analyze()
+                show_average_pronouns_info('defining_pronouns', avg_defining_pronouns_frequencies,
+                                           avg_defining_pronouns_counts)
+                wait_for_enter_to_analyze()
 
-            show_average_pronouns_info('negative_pronouns', avg_negative_pronouns_frequencies,
-                                       avg_negative_pronouns_counts)
+                show_average_pronouns_info('relative_pronouns', avg_relative_pronouns_frequencies,
+                                           avg_relative_pronouns_counts)
+                wait_for_enter_to_analyze()
 
-            wait_for_enter_to_analyze()
+                show_average_pronouns_info('indefinite_pronouns', avg_indefinite_pronouns_frequencies,
+                                           avg_indefinite_pronouns_counts)
+                wait_for_enter_to_analyze()
 
-            print(
-                Fore.GREEN + Style.BRIGHT + '\n                       СРЕДНИЕ ЧАСТОТЫ ЗНАКОВ ПРЕПИНАНИЯ')
-            table_punctuation = Table()
-            table_punctuation.add_column("Знак\n", justify="center")
-            table_punctuation.add_column("Абсолютная частота\n", justify="center")
-            table_punctuation.add_column("Частота ко всем\nтокенам текста (%)", justify="center")
-            table_punctuation.add_column("Частота ко всем\nзнакам препинания (%)", justify="center")
+                show_average_pronouns_info('negative_pronouns', avg_negative_pronouns_frequencies,
+                                           avg_negative_pronouns_counts)
 
-            for punct in sorted(avg_punct_normalized_frequency.keys(),
-                                key=lambda item: avg_punct_normalized_frequency[item], reverse=True):
-                count = avg_punctuation_counts.get(punct, 0)
-                norm_freq = avg_punct_normalized_frequency.get(punct, 0)
-                all_punct_freq = avg_punct_to_all_punct_frequency.get(punct, 0)
+                wait_for_enter_to_analyze()
 
-                if norm_freq > 0 or all_punct_freq > 0:
-                    table_punctuation.add_row(punct, f"{count:.2f}", f"{norm_freq:.2f}%", f"{all_punct_freq:.2f}%")
+                print(
+                    Fore.GREEN + Style.BRIGHT + '\n                       СРЕДНИЕ ЧАСТОТЫ ЗНАКОВ ПРЕПИНАНИЯ')
+                table_punctuation = Table()
+                table_punctuation.add_column("Знак\n", justify="center")
+                table_punctuation.add_column("Абсолютная частота\n", justify="center")
+                table_punctuation.add_column("Частота ко всем\nтокенам текста (%)", justify="center")
+                table_punctuation.add_column("Частота ко всем\nзнакам препинания (%)", justify="center")
 
-            console.print(table_punctuation)
-            wait_for_enter_to_analyze()
+                for punct in sorted(avg_punct_normalized_frequency.keys(),
+                                    key=lambda item: avg_punct_normalized_frequency[item], reverse=True):
+                    count = avg_punctuation_counts.get(punct, 0)
+                    norm_freq = avg_punct_normalized_frequency.get(punct, 0)
+                    all_punct_freq = avg_punct_to_all_punct_frequency.get(punct, 0)
+
+                    if norm_freq > 0 or all_punct_freq > 0:
+                        table_punctuation.add_row(punct, f"{count:.2f}", f"{norm_freq:.2f}%", f"{all_punct_freq:.2f}%")
+
+                console.print(table_punctuation)
+                wait_for_enter_to_analyze()
 
         else:
             print("Нет данных для отображения.")
@@ -2205,7 +2261,8 @@ class SaveToDatabase:
         """Выводит сравнительную таблицу для разных баз данных"""
         print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
         print(
-            Fore.GREEN + Style.BRIGHT + '        СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'SIMPLIFICATION' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
         print(Fore.LIGHTWHITE_EX + "*" * 80)
         table = Table()
 
@@ -2213,7 +2270,6 @@ class SaveToDatabase:
         for db in comparison_results.keys():
             table.add_column(db, justify="center", style="bold")
 
-        # Добавляем строки с показателями
         for feature in comparison_results[list(comparison_results.keys())[0]].keys():
             row = [feature]
             for db in comparison_results.keys():
@@ -2222,141 +2278,401 @@ class SaveToDatabase:
 
         console.print(table)
         print(Fore.LIGHTWHITE_EX + "*" * 80)
+        wait_for_enter_to_choose_opt()
 
-    # def print_pos_unigrams_comparison_table(self, comparison_results):
-    #     # Заголовок таблицы
-    #     headers = ["POS"] + list(comparison_results.keys())
-    #
-    #     # Собираем все уникальные POS из всех корпусов
-    #     all_pos = set()
-    #     for corpus_data in comparison_results.values():
-    #         all_pos.update(corpus_data.get('pos_unigrams_freq', {}).keys())
-    #
-    #     # Печать заголовка таблицы
-    #     print(f"{' | '.join(headers)}")
-    #     print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-    #
-    #     # Перебираем все POS и выводим их частоты по каждому корпусу
-    #     for pos in sorted(all_pos):
-    #         row = [pos]  # Начинаем строку с POS
-    #         for corpus_name, corpus_data in comparison_results.items():
-    #             # Получаем частоту для данного POS в текущем корпусе, если отсутствует - ставим 0
-    #             freq = corpus_data.get('pos_unigrams_freq', {}).get(pos, 0)
-    #             row.append(str(freq))
-    #         print(" | ".join(row))
-
-    def print_pos_unigrams_comparison_table(self, comparison_results):
+    def print_ngrams_comparison_table(self, comparison_results):
         """Печатает таблицу сравнения частот n-граммов для разных корпусов"""
-        # Заголовок таблицы
-        headers = ["Unigram"] + list(comparison_results.keys())
+        print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'ЧАСТЕРЕЧНЫХ УНИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        # Создание таблицы для POS Unigrams
+        table.add_column("Unigram", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
 
-        # Собираем все уникальные POS из всех корпусов
         all_pos = set()
         for corpus_data in comparison_results.values():
             all_pos.update(corpus_data.get('pos_unigrams_freq', {}).keys())
 
-        # Собираем все уникальные биграммы, триграммы и т.д.
-        all_bigrams = set()
-        all_trigrams = set()
-        all_char_unigrams = set()
-        all_char_bigrams = set()
-        all_char_trigrams = set()
-        all_func_w_trigrams = set()
+        sorted_pos = sorted(all_pos, key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+            'pos_unigrams_freq', {}).get(x, 0), reverse=True)
 
-        for corpus_data in comparison_results.values():
-            all_bigrams.update(corpus_data.get('pos_bigrams_freq', {}).keys())
-            all_trigrams.update(corpus_data.get('pos_trigrams_freq', {}).keys())
-            all_char_unigrams.update(corpus_data.get('char_unigrams_freq', {}).keys())
-            all_char_bigrams.update(corpus_data.get('char_bigrams_freq', {}).keys())
-            all_char_trigrams.update(corpus_data.get('char_trigrams_freq', {}).keys())
-            for category, trigrams in corpus_data.get('func_w_trigrams_freqs', {}).items():
-                all_func_w_trigrams.update(trigrams.keys())
-
-        # Печать заголовка таблицы
-        print(f"{' | '.join(headers)}")
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-
-        # Перебираем все POS и выводим их частоты по каждому корпусу
-        for pos in sorted(all_pos):
-            row = [pos]  # Начинаем строку с POS
+        for pos in sorted_pos:
+            row = [pos]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('pos_unigrams_freq', {}).get(pos, 0)
                 row.append(f"{round(freq, 4)}")
-            print(" | ".join(row))
+            table.add_row(*row)
 
-        # Перебираем все биграммы и выводим их частоты по каждому корпусу
-        print("\nBigrams Comparison:")
-        print(f"{'Bigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-        for bigram in sorted(all_bigrams):
-            row = [bigram]  # Начинаем строку с биграммы
+        console.print(table)
+        wait_for_enter_to_analyze()
+
+        print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'ЧАСТЕРЕЧНЫХ БИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Bigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_bigrams = set()
+        for corpus_data in comparison_results.values():
+            all_bigrams.update(corpus_data.get('pos_bigrams_freq', {}).keys())
+
+        sorted_bigrams = sorted(all_bigrams, key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+            'pos_bigrams_freq', {}).get(x, 0), reverse=True)
+
+        for bigram in sorted_bigrams:
+            row = [bigram]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('pos_bigrams_freq', {}).get(bigram, 0)
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
-            print(" | ".join(row))
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-        # Перебираем все триграммы и выводим их частоты по каждому корпусу
-        print("\nTrigrams Comparison:")
-        print(f"{'Trigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-        for trigram in sorted(all_trigrams):
-            row = [trigram]  # Начинаем строку с триграммы
+        console.print(table)
+        wait_for_enter_to_analyze()
+
+        print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'ЧАСТЕРЕЧНЫХ ТРИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Trigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_trigrams = set()
+        for corpus_data in comparison_results.values():
+            all_trigrams.update(corpus_data.get('pos_trigrams_freq', {}).keys())
+
+        sorted_trigrams = sorted(all_trigrams, key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+            'pos_trigrams_freq', {}).get(x, 0), reverse=True)
+
+        for trigram in sorted_trigrams:
+            row = [trigram]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('pos_trigrams_freq', {}).get(trigram, 0)
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
-            print(" | ".join(row))
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-        # Перебираем все char-unigrams и выводим их частоты по каждому корпусу
-        print("\nCharacter Unigrams Comparison:")
-        print(f"{'Char Unigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-        for char_unigram in sorted(all_char_unigrams):
-            row = [char_unigram]  # Начинаем строку с char unigram
+        console.print(table)
+        wait_for_enter_to_analyze()
+
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'СИМВОЛЬНЫХ УНИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Char Unigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_char_unigrams = set()
+        for corpus_data in comparison_results.values():
+            all_char_unigrams.update(corpus_data.get('char_unigrams_freq', {}).keys())
+
+        sorted_char_unigrams = sorted(all_char_unigrams,
+                                      key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+                                          'char_unigrams_freq', {}).get(x, 0), reverse=True)
+
+        for char_unigram in sorted_char_unigrams:
+            row = [char_unigram]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('char_unigrams_freq', {}).get(char_unigram, 0)
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
-            print(" | ".join(row))
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-        # Перебираем все char-bigrams и выводим их частоты по каждому корпусу
-        print("\nCharacter Bigrams Comparison:")
-        print(f"{'Char Bigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-        for char_bigram in sorted(all_char_bigrams):
-            row = [char_bigram]  # Начинаем строку с char bigram
+        console.print(table)
+        wait_for_enter_to_analyze()
+
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'СИМВОЛЬНЫХ БИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Char Bigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_char_bigrams = set()
+        for corpus_data in comparison_results.values():
+            all_char_bigrams.update(corpus_data.get('char_bigrams_freq', {}).keys())
+
+        sorted_char_bigrams = sorted(all_char_bigrams,
+                                     key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+                                         'char_bigrams_freq', {}).get(x, 0), reverse=True)
+
+        for char_bigram in sorted_char_bigrams:
+            row = [char_bigram]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('char_bigrams_freq', {}).get(char_bigram, 0)
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
-            print(" | ".join(row))
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-        # Перебираем все char-trigrams и выводим их частоты по каждому корпусу
-        print("\nCharacter Trigrams Comparison:")
-        print(f"{'Char Trigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
-        for char_trigram in sorted(all_char_trigrams):
-            row = [char_trigram]  # Начинаем строку с char trigram
+        console.print(table)
+        wait_for_enter_to_analyze()
+
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'СИМВОЛЬНЫХ ТРИГРАММ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Char Trigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_char_trigrams = set()
+        for corpus_data in comparison_results.values():
+            all_char_trigrams.update(corpus_data.get('char_trigrams_freq', {}).keys())
+
+        sorted_char_trigrams = sorted(all_char_trigrams,
+                                      key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+                                          'char_trigrams_freq', {}).get(x, 0), reverse=True)
+
+        for char_trigram in sorted_char_trigrams:
+            row = [char_trigram]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = corpus_data.get('char_trigrams_freq', {}).get(char_trigram, 0)
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
-            print(" | ".join(row))
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-        # Перебираем все функциональные триграммы и выводим их частоты по каждому корпусу
-        print("\nFunctional Trigrams Comparison:")
-        print(f"{'Functional Trigrams'.ljust(20)} | " + " | ".join(comparison_results.keys()))
-        print('-' * (len(headers) * 20))  # Разделитель между заголовком и данными
+        console.print(table)
+        wait_for_enter_to_analyze()
 
-        for func_w_trigram in sorted(all_func_w_trigrams):
-            row = [str(func_w_trigram)]  # Начинаем строку с функциональной триграммы
+        print(
+            Fore.GREEN + Style.BRIGHT + '             СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'ТРИГРАММ С ФУНКЦИОНАЛЬНЫМИ СЛОВАМИ' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+        table.add_column("Functional Trigrams", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        all_func_w_trigrams = set()
+        for corpus_data in comparison_results.values():
+            for category, trigrams in corpus_data.get('func_w_trigrams_freqs', {}).items():
+                all_func_w_trigrams.update(trigrams.keys())
+
+        sorted_func_w_trigrams = sorted(all_func_w_trigrams, key=lambda x: next(iter(comparison_results.values())).get(
+            'func_w_trigrams_freqs', {}).get(
+            next(iter(next(iter(comparison_results.values())).get('func_w_trigrams_freqs', {})), {}), {}).get(x, 0),
+                                        reverse=True)
+
+        for func_w_trigram in sorted_func_w_trigrams:
+            row = [str(func_w_trigram)]
             for corpus_name, corpus_data in comparison_results.items():
                 freq = 0
                 func_trigrams = corpus_data.get('func_w_trigrams_freqs', {})
-
-                # Перебираем все категории в 'func_w_trigrams_freqs'
                 for category, trigrams in func_trigrams.items():
-                    # Проверяем, существует ли функциональная триграмма в данной категории
                     if func_w_trigram in trigrams:
-                        freq = trigrams[func_w_trigram]  # Получаем частоту функциональной триграммы
-                        break  # Прерываем, как только находим триграмму (чтобы избежать перезаписи)
+                        freq = trigrams[func_w_trigram]
+                        break
+                row.append(f"{round(freq, 4)}")
+            table.add_row(*row)
 
-                row.append(f"{round(freq, 4)}")  # Округляем до 2 знаков
+        console.print(table)
+        wait_for_enter_to_analyze()
 
-            print(" | ".join(row))  # Выводим строку с частотами для текущей функциональной триграммы
+    def print_normalisation_comparison_table(self, comparison_results):
+        """Выводит сравнительную таблицу нормализации для разных баз данных"""
+        print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+        print(
+            Fore.GREEN + Style.BRIGHT + '               СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'NORMALISATION' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+
+        table.add_column("Показатель", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        for feature in comparison_results[list(comparison_results.keys())[0]].keys():
+            row = [feature]
+            for db in comparison_results.keys():
+                value = comparison_results[db][feature]
+                if isinstance(value, float):
+                    row.append(f"{value:.2f}")
+                elif isinstance(value, int):
+                    row.append(str(value))
+                else:
+                    row.append(str(value))
+            table.add_row(*row)
+
+        console.print(table)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        wait_for_enter_to_choose_opt()
+
+    def print_explicitation_comparison_table(self, comparison_results):
+        """Выводит сравнительную таблицу для показателей Explicitation по корпусам"""
+        print("\n" + Fore.LIGHTWHITE_EX + "*" * 80)
+        print(
+            Fore.GREEN + Style.BRIGHT + '                 СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ' + Fore.LIGHTGREEN_EX + Style.BRIGHT
+            + 'EXPLICITATION' + Fore.GREEN + Style.BRIGHT + ' ПО КОРПУСАМ' + Fore.LIGHTRED_EX + Style.BRIGHT)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        table = Table()
+
+        # Добавляем колонки
+        table.add_column("Показатель", justify="left", style="bold")
+        for db in comparison_results.keys():
+            table.add_column(db, justify="center", style="bold")
+
+        # Создаем словарь с понятными названиями показателей
+        feature_names = {
+            'explicit_naming_ratio': 'Коэфф. явного называния',
+            'single_naming': 'Коэфф единочного именования',
+            'mean_multiple_naming': 'Средняя длина именованных сущностей',
+            'named_entities_count': 'Количество именованных сущностей',
+            'sci_markers_total_count': 'Общее количество дискурсивных маркеров',
+            'topic_intro_dm_freq': 'Введение в тему',
+            'info_sequence_freq': 'Порядок следования информации',
+            'illustration_dm_freq': 'Иллюстративный материал',
+            'material_sequence_freq': 'Порядок расположения материала',
+            'conclusion_dm_freq': 'Вывод/заключение',
+            'intro_new_addit_info_freq': 'Введение новой/доп. информации',
+            'info_explanation_or_repetition_freq': 'Повтор/конкретизация информации',
+            'contrast_dm_freq': 'Противопоставление',
+            'examples_introduction_dm_freq': 'Введение примеров',
+            'author_opinion_freq': 'Мнение автораа',
+            'author_attitude_freq': 'Отношение автора',
+            'high_certainty_modal_words_freq': 'Высокая степень уверенности',
+            'moderate_certainty_modal_words_freq': 'Средняя степень уверенности',
+            'uncertainty_modal_words_freq': 'Низкая степень уверенности',
+            'call_to_action_dm_freq': 'Призыв к действию',
+            'joint_action_freq': 'Совместное действие',
+            'putting_emphasis_dm_freq': 'Акцентирование внимания',
+            'refer_to_background_knowledge_freq': 'Отсылка к фоновым знаниям'
+        }
+
+        # Заполняем таблицу значениями для каждого показателя
+        for feature_key in comparison_results[list(comparison_results.keys())[0]].keys():
+            feature_name = feature_names.get(feature_key, feature_key)
+            row = [feature_name]
+            for db in comparison_results.keys():
+                value = comparison_results[db].get(feature_key, "N/A")
+                row.append(f"{value:.3f}" if isinstance(value, (int, float)) else value)
+            table.add_row(*row)
+
+        console.print(table)
+        print(Fore.LIGHTWHITE_EX + "*" * 80)
+        wait_for_enter_to_choose_opt()
+
+    def print_miscellaneous_comparison_table(self, comparison_results):
+        """Выводит сравнительные таблицы для показателей Miscellaneous features по корпусам"""
+
+        pronoun_categories = [
+            'avg_pers_possessive_pronouns_frequencies',
+            'avg_reflexive_pronoun_frequencies',
+            'avg_demonstrative_pronouns_frequencies',
+            'avg_defining_pronouns_frequencies',
+            'avg_relative_pronouns_frequencies',
+            'avg_indefinite_pronouns_frequencies',
+            'avg_negative_pronouns_frequencies'
+        ]
+        category_names = {
+            'avg_pers_possessive_pronouns_frequencies': 'Личные и притяжательные местоимения',
+            'avg_reflexive_pronoun_frequencies': 'Возвратные местоимения',
+            'avg_demonstrative_pronouns_frequencies': 'Указательные местоимения',
+            'avg_defining_pronouns_frequencies': 'Определительные местоимения',
+            'avg_relative_pronouns_frequencies': 'Относительные местоимения',
+            'avg_indefinite_pronouns_frequencies': 'Неопределенные местоимения',
+            'avg_negative_pronouns_frequencies': 'Отрицательные местоимения'
+        }
+
+        for category in pronoun_categories:
+            table = Table(title=category_names[category])
+            table.add_column("Местоимение", justify="center", style="bold")
+            for corpus_name in comparison_results.keys():
+                table.add_column(corpus_name, justify="center")
+
+            # Assuming that all corpora have the same set of pronouns for each category
+            pronouns = set()
+            for corpus_name, data in comparison_results.items():
+                if category in data:
+                    pronouns.update(data[category].keys())
+
+            sorted_pronouns = sorted(pronouns,
+                                     key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(category,
+                                                                                                              {}).get(x,
+                                                                                                                      0),
+                                     reverse=True)
+
+            for pronoun in sorted_pronouns:
+                row = [pronoun]
+                for corpus_name in comparison_results.keys():
+                    frequency = comparison_results[corpus_name].get(category, {}).get(pronoun, 0)
+                    row.append(f"{frequency:.3f}%")
+                table.add_row(*row)
+
+            console.print(table)
+            wait_for_enter_to_analyze()
+
+        # Create a table for function words frequencies
+        table_func_words = Table(title="Частоты служебных слов")
+        table_func_words.add_column("Служебное слово", justify="center", style="bold")
+        for corpus_name in comparison_results.keys():
+            table_func_words.add_column(corpus_name, justify="center")
+
+        func_words = set()
+        for corpus_name, data in comparison_results.items():
+            if 'avg_func_words_freq' in data:
+                func_words.update(data['avg_func_words_freq'].keys())
+
+        sorted_func_words = sorted(func_words, key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+            'avg_func_words_freq', {}).get(x, 0), reverse=True)
+
+        for word in sorted_func_words:
+            row = [word]
+            for corpus_name in comparison_results.keys():
+                frequency = comparison_results[corpus_name].get('avg_func_words_freq', {}).get(word, 0)
+                row.append(f"{frequency:.3f}%")
+            table_func_words.add_row(*row)
+
+        console.print(table_func_words)
+        wait_for_enter_to_analyze()
+
+        # Create a table for punctuation frequencies
+        table_punctuation = Table(title="Частоты знаков препинания всех токенов")
+        table_punctuation.add_column("Знак препинания", justify="center", style="bold")
+        for corpus_name in comparison_results.keys():
+            table_punctuation.add_column(corpus_name, justify="center")
+
+        punctuation_marks = set()
+        for corpus_name, data in comparison_results.items():
+            if 'avg_punct_normalized_frequency' in data:
+                punctuation_marks.update(data['avg_punct_normalized_frequency'].keys())
+
+        sorted_punctuation_marks = sorted(punctuation_marks,
+                                          key=lambda x: comparison_results[list(comparison_results.keys())[0]].get(
+                                              'avg_punct_normalized_frequency', {}).get(x, 0), reverse=True)
+
+        for punct in sorted_punctuation_marks:
+            row = [punct]
+            for corpus_name in comparison_results.keys():
+                frequency = comparison_results[corpus_name].get('avg_punct_normalized_frequency', {}).get(punct, 0)
+                row.append(f"{frequency:.3f}%")
+            table_punctuation.add_row(*row)
+
+        console.print(table_punctuation)
+        wait_for_enter_to_analyze()
+
+        # Create a table for punctuation to all punctuation frequencies
+        table_punct_to_all = Table(title="Частоты знаков препинания относительно всех знаков препинания")
+        table_punct_to_all.add_column("Знак препинания", justify="center", style="bold")
+        for corpus_name in comparison_results.keys():
+            table_punct_to_all.add_column(corpus_name, justify="center")
+
+        for punct in sorted_punctuation_marks:
+            row = [punct]
+            for corpus_name in comparison_results.keys():
+                frequency = comparison_results[corpus_name].get('avg_punct_to_all_punct_frequency', {}).get(punct, 0)
+                row.append(f"{frequency:.3f}%")
+            table_punct_to_all.add_row(*row)
+
+        console.print(table_punct_to_all)
+        wait_for_enter_to_choose_opt()

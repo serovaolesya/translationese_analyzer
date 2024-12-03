@@ -398,5 +398,5 @@ def choose_db():
         elif db_choice == "4":
             return
         else:
-            print(Fore.RED + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
+            print(Fore.LIGHTRED_EX + Style.BRIGHT + "Неверный выбор базы данных. Пожалуйста, попробуйте снова.")
     return db

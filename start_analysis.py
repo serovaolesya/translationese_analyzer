@@ -381,7 +381,7 @@ class CorpusText:
             except ValueError as e:
                 print(Fore.LIGHTRED_EX + str(e) + Fore.RESET)
 
-        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "ПАСПОРТ ТЕКСТА УСПЕШНО СОЗДАН!")
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\nПАСПОРТ ТЕКСТА УСПЕШНО СОЗДАН!")
 
     def display_text_passport(self):
         """Метод для отображения паспорта текста в виде таблицы."""
@@ -583,7 +583,7 @@ class CorpusText:
                     Fore.LIGHTRED_EX + "Неверный ввод. Пожалуйста, выберите один из возможных вариантов (y/n)." + Fore.RESET)
                 continue
 
-        self.analyze_and_save(show_analysis)  # Выполняем анализ и сохраняем результаты
+        self.analyze_and_save(show_analysis)
         print(
             Fore.GREEN + Style.BRIGHT + "\nАНАЛИЗ ИНДИКАТОРОВ ФЕНОМЕНА" + Fore.LIGHTGREEN_EX + Style.BRIGHT +
             " TRANSLATIONESE " + Fore.GREEN + Style.BRIGHT + "УСПЕШНО ЗАВЕРШЕН!")
@@ -638,7 +638,7 @@ class CorpusText:
 
 def user_interface():
     print(
-        Fore.GREEN + Style.BRIGHT + '\nАНАЛИЗТОР ФЕНОМЕНА' + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' TRANSLATIONESE' + Fore.GREEN + Style.BRIGHT + ' ЗАПУЩЕН\n' + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + '\nАНАЛИЗАТОР ФЕНОМЕНА' + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' TRANSLATIONESE' + Fore.GREEN + Style.BRIGHT + ' ЗАПУЩЕН\n' + Fore.RESET)
     while True:
         print(Fore.GREEN + Style.BRIGHT + "Выберите действие: ")
         print(Fore.GREEN + Style.BRIGHT + "1." + Style.NORMAL + Fore.BLACK + " Проанализировать новый текст")
@@ -646,11 +646,11 @@ def user_interface():
             Fore.GREEN + Style.BRIGHT + "2." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном тексте в корпусе")
         print(
             Fore.GREEN + Style.BRIGHT + "3." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном корпусе")
-        # print(
-        #     Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Отобразить средние показатели по всем корпусам")
         print(
-            Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Подготовить текст к анализу (удаление ссылок, выравнивание текста по длине)")
-        print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "5." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти из программы")
+            Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Отобразить средние показатели по всем корпусам")
+        print(
+            Fore.GREEN + Style.BRIGHT + "5." + Style.NORMAL + Fore.BLACK + " Подготовить текст к анализу (удаление ссылок, выравнивание текста по длине)")
+        print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "6." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти из программы")
 
         choice = input(Fore.GREEN + Style.BRIGHT + "Введите номер действия: \n")
 
@@ -681,37 +681,37 @@ def user_interface():
                 continue
             corpus = CorpusText(db=db)
             corpus.display_corpus_info()
-        # elif choice == "4":
-        #     corpus = CorpusText()
-        #     if (
-        #             check_db_exists(NON_TRANSLATED_DB_NAME)
-        #             and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
-        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
-        #     ):
-        #         corpus.display_corpus_info(choice='all')
-        #
-        #     elif (
-        #             check_db_exists(NON_TRANSLATED_DB_NAME)
-        #             and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
-        #     ):
-        #         corpus.display_corpus_info(choice='auth_mt')
-        #     elif (
-        #             check_db_exists(NON_TRANSLATED_DB_NAME)
-        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
-        #     ):
-        #         corpus.display_corpus_info(choice='auth_ht')
-        #     elif (
-        #             check_db_exists(MACHINE_TRANSLATED_DB_NAME)
-        #             and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
-        #     ):
-        #         corpus.display_corpus_info(choice='mt_ht')
-        #
-        #     else:
-        #         print(Fore.LIGHTRED_EX + Style.BRIGHT + "Создайте минимум два корпуса текстов, чтобы сравнить.")
-
         elif choice == "4":
-            preprocess_text.main()
+            corpus = CorpusText()
+            if (
+                    check_db_exists(NON_TRANSLATED_DB_NAME)
+                    and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+                    and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+            ):
+                corpus.display_corpus_info(choice='all')
+
+            elif (
+                    check_db_exists(NON_TRANSLATED_DB_NAME)
+                    and check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+            ):
+                corpus.display_corpus_info(choice='auth_mt')
+            elif (
+                    check_db_exists(NON_TRANSLATED_DB_NAME)
+                    and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+            ):
+                corpus.display_corpus_info(choice='auth_ht')
+            elif (
+                    check_db_exists(MACHINE_TRANSLATED_DB_NAME)
+                    and check_db_exists(HUMAN_TRANSLATED_DB_NAME)
+            ):
+                corpus.display_corpus_info(choice='mt_ht')
+
+            else:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + "Для сравнение необходимо наличие хотя бы двух корпусов.")
+
         elif choice == "5":
+            preprocess_text.main()
+        elif choice == "6":
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nВыход из программы.")
             exit()
         else:

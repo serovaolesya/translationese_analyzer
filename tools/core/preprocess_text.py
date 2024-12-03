@@ -100,7 +100,7 @@ def show_sent_tokenization(sentences):
         last_but_one_token = words[-2] if len(words) > 1 else ''
 
         print(
-            Fore.LIGHTWHITE_EX + Style.BRIGHT + f" {index})" + Fore.LIGHTBLUE_EX + f" [{first_token}, {last_but_one_token} {last_token}]" + Fore.LIGHTWHITE_EX + Style.NORMAL + f" {sent}")
+            Fore.BLACK + Style.BRIGHT + f" {index})" + Fore.GREEN + f" [{first_token}, {last_but_one_token} {last_token}]" + Fore.BLACK + Style.NORMAL + f" {sent}")
 
 
 def adjust_text_length(text):

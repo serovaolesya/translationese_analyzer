@@ -376,7 +376,7 @@ def choose_universal():
 def choose_db():
     while True:
         print(Fore.GREEN + Style.BRIGHT + "\nВыберите базу данных, в которую хотите"
-                                          " сохранить результат анализа текста:")
+                                          " сохранить результаты анализа:")
         print(Fore.GREEN + Style.BRIGHT + "1."
               + Style.NORMAL + Fore.BLACK + " База непереводных текстов")
         print(Fore.GREEN + Style.BRIGHT

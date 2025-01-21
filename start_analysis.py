@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*- # Языковая кодировка UTF-8
+import json
+import os
+import re
+
 import nltk
 
 try:
@@ -11,50 +15,50 @@ try:
 except LookupError:
     nltk.download('punkt_tab')
 
-import json
-import os
-import re
-
-from natasha import (Segmenter, MorphVocab, NewsEmbedding,
-                     NewsMorphTagger, NewsSyntaxParser, Doc)
+from natasha import (
+    Segmenter, MorphVocab, NewsEmbedding,
+    NewsMorphTagger, NewsSyntaxParser, Doc
+)
 import pymorphy2
 from colorama import Fore, Style, init
 from rich.console import Console
 from rich.table import Table
 
 from tools.core import preprocess_text
-from tools.core.constants import (NON_TRANSLATED_DB_NAME,
-                                  MACHINE_TRANSLATED_DB_NAME,
-                                  HUMAN_TRANSLATED_DB_NAME, RETURN_TO_MENU)
+from tools.core.constants import (
+    NON_TRANSLATED_DB_NAME, MACHINE_TRANSLATED_DB_NAME,
+    HUMAN_TRANSLATED_DB_NAME, RETURN_TO_MENU
+)
 from tools.core.tokens_counter import count_tokens
 from tools.core.custom_punkt_tokenizer import sent_tokenize_with_abbr
 from tools.work_with_db import SaveToDatabase
-from tools.core.utils import (wait_for_enter_to_analyze,
-                              display_morphological_annotation,
-                              format_morphological_features,
-                              wait_for_enter_to_choose_opt,
-                              check_db_exists, choose_db)
+from tools.core.utils import (
+    wait_for_enter_to_analyze, display_morphological_annotation,
+    format_morphological_features, wait_for_enter_to_choose_opt,
+    check_db_exists, choose_db
+)
 from tools.core.validators import validate_gender, validate_years
 
-from tools.core.data.pronouns import (pers_possessive_pronouns_analysis_list,
-                                      reflexive_pronoun_list,
-                                      demonstrative_pronouns_list,
-                                      defining_pronouns_list,
-                                      relative_pronouns_list,
-                                      indefinite_pronouns_list,
-                                      negative_pronouns_list)
+from tools.core.data.pronouns import (
+    pers_possessive_pronouns_analysis_list,
+    reflexive_pronoun_list, demonstrative_pronouns_list,
+    defining_pronouns_list, relative_pronouns_list,
+    indefinite_pronouns_list, negative_pronouns_list
+)
 
 # Импорты для "Simplification_features"
 from tools.simplification.lexical_density import calculate_lexical_density
 from tools.simplification.lexical_variety import lexical_variety
-from tools.simplification.mean_word_length import (mean_word_length_char,
-                                                   calculate_syllable_ratio)
-from tools.simplification.mean_sent_length import (mean_sentence_length_in_tokens,
-                                                   mean_sentence_length_in_chars)
+from tools.simplification.mean_word_length import (
+    mean_word_length_char, calculate_syllable_ratio
+)
+from tools.simplification.mean_sent_length import (
+    mean_sentence_length_in_tokens, mean_sentence_length_in_chars
+)
 from tools.simplification.mean_word_rank import calculate_mean_word_rank
-from tools.simplification.most_frequent_words import (find_n_most_frequent_words,
-                                                      count_types_in_text)
-
+from tools.simplification.most_frequent_words import (
+    find_n_most_frequent_words, count_types_in_text
+)
 # Импорты для "Normalisation_features"
 from tools.normalisation.repetition import calculate_repetition
 
@@ -550,7 +554,7 @@ class CorpusText:
                 if start < total_sentences:
                     user_input = input(
                         Fore.LIGHTGREEN_EX + Style.BRIGHT + "Отобразить следующие 5 предложений (y/n)?"
-                                                             " \n" + Fore.RESET).strip().lower()
+                                                            " \n" + Fore.RESET).strip().lower()
 
                     while user_input not in ['y', 'n']:
                         user_input = input(
@@ -636,21 +640,23 @@ class CorpusText:
                 db_corpora_comparison.display_corpus_info(choice)
 
 
-def user_interface():
+def start_analysis():
     print(
         Fore.GREEN + Style.BRIGHT + '\nАНАЛИЗАТОР ФЕНОМЕНА' + Fore.LIGHTGREEN_EX + Style.BRIGHT + ' TRANSLATIONESE' + Fore.GREEN + Style.BRIGHT + ' ЗАПУЩЕН\n' + Fore.RESET)
     while True:
         print(Fore.GREEN + Style.BRIGHT + "Выберите действие: ")
         print(Fore.GREEN + Style.BRIGHT + "1." + Style.NORMAL + Fore.BLACK + " Проанализировать новый текст")
         print(
-            Fore.GREEN + Style.BRIGHT + "2." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном тексте в корпусе")
+            Fore.GREEN + Style.BRIGHT + "2." + Style.NORMAL + Fore.BLACK + " Проанализировать несколько текстов за раз")
         print(
-            Fore.GREEN + Style.BRIGHT + "3." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном корпусе")
+            Fore.GREEN + Style.BRIGHT + "3." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном тексте в корпусе")
         print(
-            Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Отобразить средние показатели по всем корпусам")
+            Fore.GREEN + Style.BRIGHT + "4." + Style.NORMAL + Fore.BLACK + " Отобразить информацию о выбранном корпусе")
         print(
-            Fore.GREEN + Style.BRIGHT + "5." + Style.NORMAL + Fore.BLACK + " Подготовить текст к анализу (удаление ссылок, выравнивание текста по длине)")
-        print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "6." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти из программы")
+            Fore.GREEN + Style.BRIGHT + "5." + Style.NORMAL + Fore.BLACK + " Отобразить средние показатели по всем корпусам")
+        print(
+            Fore.GREEN + Style.BRIGHT + "6." + Style.NORMAL + Fore.BLACK + " Подготовить текст к анализу (удаление ссылок, выравнивание текста по длине)")
+        print(Fore.LIGHTBLACK_EX + Style.BRIGHT + "7." + Style.NORMAL + Fore.LIGHTBLACK_EX + " Выйти из программы")
 
         choice = input(Fore.GREEN + Style.BRIGHT + "Введите номер действия: \n")
 
@@ -666,13 +672,14 @@ def user_interface():
             corpus_text.run_analysis_pipeline()
             wait_for_enter_to_choose_opt()
 
-        elif choice == "2":
+        if choice == "2":
             db = choose_db()
-            if not db:
-                print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
-                continue
-            corpus = CorpusText(db=db)
-            corpus.show_texts()
+            if db == "auth_texts_corpus.db":
+                analyze_texts_from_directory("auth_ready", db)
+            elif db == "mt_texts_corpus.db":
+                analyze_texts_from_directory("mt_ready", db)
+            elif db == "ht_texts_corpus.db":
+                analyze_texts_from_directory("ht_ready", db)
 
         elif choice == "3":
             db = choose_db()
@@ -680,8 +687,16 @@ def user_interface():
                 print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
                 continue
             corpus = CorpusText(db=db)
-            corpus.display_corpus_info()
+            corpus.show_texts()
+
         elif choice == "4":
+            db = choose_db()
+            if not db:
+                print(Fore.LIGHTRED_EX + Style.BRIGHT + RETURN_TO_MENU)
+                continue
+            corpus = CorpusText(db=db)
+            corpus.display_corpus_info()
+        elif choice == "5":
             corpus = CorpusText()
             if (
                     check_db_exists(NON_TRANSLATED_DB_NAME)
@@ -709,9 +724,9 @@ def user_interface():
             else:
                 print(Fore.LIGHTRED_EX + Style.BRIGHT + "Для сравнение необходимо наличие хотя бы двух корпусов.")
 
-        elif choice == "5":
-            preprocess_text.main()
         elif choice == "6":
+            preprocess_text.main()
+        elif choice == "7":
             print(Fore.LIGHTRED_EX + Style.BRIGHT + "\nВыход из программы.")
             exit()
         else:
@@ -728,7 +743,7 @@ def process_text_from_file(file_path):
 def text_input_for_analysis():
     print("\n" + Fore.LIGHTWHITE_EX + "*" * 100)
     print(
-        Fore.GREEN + Style.BRIGHT + "                     ВВОД ТЕКСТА ДЛЯ ПОСЛЕДУЮЩЕГО АНАЛИЗА" + Fore.RESET)
+        Fore.GREEN + Style.BRIGHT + "                     ВВОД ТЕКСТА ДЛЯ АНАЛИЗА" + Fore.RESET)
     print(Fore.LIGHTWHITE_EX + "*" * 100)
     print(
         Fore.LIGHTRED_EX + Style.BRIGHT + "Внимание! Текст должен быть заранее предобработан и готов для "
@@ -736,7 +751,9 @@ def text_input_for_analysis():
 
     while True:
         mode = input(
-            Fore.GREEN + Style.BRIGHT + "Введите 'f' для обработки файла или 't' для ввода текста вручную: \n" + Fore.RESET).strip().lower()
+            Fore.GREEN + Style.BRIGHT + "Введите 'f' для обработки файла "
+                                        "или 't' для ввода текста вручную: \n"
+            + Fore.RESET).strip().lower()
         if mode.lower().strip() == 'f':
             while True:
                 print(
@@ -758,8 +775,8 @@ def text_input_for_analysis():
                     continue
 
                 file_name = input(Fore.GREEN + "Введите название файла в"
-                                                        " выбранной директории "
-                                                        "(только файлы .txt): " + Fore.RESET).strip()
+                                               " выбранной директории "
+                                               "(только файлы .txt): " + Fore.RESET).strip()
                 file_path = directory + file_name + '.txt'
                 if os.path.isfile(file_path):
 
@@ -770,7 +787,7 @@ def text_input_for_analysis():
                 continue
         elif mode.lower().strip() == 't':
             print(Fore.GREEN + Style.BRIGHT + "\nВведите текст для анализа (по окончанию ввода"
-                                                      " напечатайте 'r' с красной строки и нажмите 'Enter').")
+                                              " напечатайте 'r' с красной строки и нажмите 'Enter').")
             print(
                 Fore.RED + Style.BRIGHT + "Для возврата в главное меню напечатайте 'x' с красной строки и нажмите 'Enter'.")
             text_lines = []
@@ -793,4 +810,89 @@ def text_input_for_analysis():
             return input_text
 
 
-user_interface()
+def analyze_texts_from_directory(base_dir, db):
+    """
+    Анализирует все текстовые файлы из указанной директории.
+
+    :param base_dir: Основная директория (mt_ready, ht_ready, auth_ready).
+    """
+    # Автоматическое создание основной директории, если она не существует
+    os.makedirs(base_dir, exist_ok=True)
+    while True:
+        dir_name = input(Fore.GREEN + Style.BRIGHT + f"Введите название директории с "
+                                                     f"txt-файлами для анализа внутри.\n"
+                                                     f"Директория с файлами должна находиться "
+                                                     f"внутри директории {base_dir}: \n"
+                         + Fore.RESET).strip()
+        target_dir = os.path.join(base_dir, dir_name)
+
+        if not os.path.exists(target_dir):
+            print(Fore.LIGHTRED_EX + f"Ошибка: Директория {target_dir} не существует."
+                                     f" Проверьте путь." + Fore.RESET)
+            continue
+        # Запрос предметной области
+        subject_area = input(
+            Fore.GREEN + Style.BRIGHT + "Введите предметную область, общую для"
+                                        " всех текстов в директории: \n" +
+            Fore.RESET).strip()
+        while not subject_area:
+            subject_area = input(
+                Fore.LIGHTRED_EX + "Предметная область не может быть пустой. "
+                                   "Пожалуйста, введите её: "
+                + Fore.RESET).strip()
+
+        text_files = [os.path.join(target_dir, f)
+                      for f in os.listdir(target_dir)
+                      if f.endswith('.txt')]
+
+        if not text_files:
+            print(Fore.LIGHTRED_EX + f"Ошибка: В директории {target_dir}"
+                                     f" нет файлов с расширением .txt."
+                  + Fore.RESET)
+            continue
+
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + f"Найдено {len(text_files)}"
+                                                  f" текстов. Анализ запущен. "
+                                                  f"Время анализа зависит "
+                                                  f"от количества "
+                                                  f"\nи объема текстов."
+                                                  f" Пожалуйста, "
+                                                  f"будьте готовы подождать "
+                                                  f" несколько минут.")
+        for idx, file_path in enumerate(text_files, start=1):
+            try:
+                text_name = f"{dir_name.capitalize()}_{idx}"  # Формируем название статьи
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    text = file.read()
+
+                # Вызываем анализ текста
+                corpus = CorpusText(db=db, text=text)
+                corpus.analyze_and_save(show_analysis=False)
+
+                # Сохраняем паспорт текста напрямую
+                corpus.save_text_passport(
+                    text=text,
+                    title=text_name,
+                    subject_area=subject_area,  # Введённая пользователем предметная область
+                    keywords="",
+                    publication_year="",
+                    published_in="",
+                    authors="",
+                    author_gender="",
+                    author_birth_year=""
+                )
+                print(Fore.LIGHTGREEN_EX + f"Текст \"{text_name}\" успешно "
+                                           f"проанализирован и сохранён."
+                      + Fore.RESET)
+
+            except Exception as e:
+                print(Fore.LIGHTRED_EX + f"Ошибка при обработке файла {file_path}: {e}")
+        # Выходим из цикла после успешного завершения анализа всех файлов
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT +
+              "Анализ всех текстов завершён."
+              "" + Fore.RESET)
+        wait_for_enter_to_choose_opt()
+        break
+
+
+start_analysis()
